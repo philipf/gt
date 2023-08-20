@@ -1,6 +1,6 @@
 // Unit tests for the Day domain object.
 // It is testing a number of scenarios in the internal domain package.
-package domain
+package models
 
 import (
 	"testing"
@@ -11,7 +11,7 @@ import (
 
 func initDay() Day {
 	d := Day{
-		ID:    uuid.New(),
+		Id:    uuid.New(),
 		Date:  time.Date(2023, 8, 20, 0, 0, 0, 0, time.UTC),
 		Start: time.Date(2023, 8, 20, 9, 0, 0, 0, time.UTC),
 		End:   time.Date(2023, 8, 20, 17, 0, 0, 0, time.UTC),
@@ -24,7 +24,7 @@ func TestShouldAllowFullSegment(t *testing.T) {
 
 	// Add a segment that covers the whole day
 	s1 := Segment{
-		ID:          uuid.New(),
+		Id:          uuid.New(),
 		Description: "S1",
 		Start:       time.Date(2023, 8, 20, 9, 0, 0, 0, time.UTC),
 		End:         time.Date(2023, 8, 20, 17, 0, 0, 0, time.UTC),
@@ -41,7 +41,7 @@ func TestShouldAllowMultipleSegments(t *testing.T) {
 	d := initDay()
 
 	error := d.AddSegment(Segment{
-		ID:          uuid.New(),
+		Id:          uuid.New(),
 		Description: "S1",
 		Start:       time.Date(2023, 8, 20, 9, 0, 0, 0, time.UTC),
 		End:         time.Date(2023, 8, 20, 10, 0, 0, 0, time.UTC),
@@ -52,7 +52,7 @@ func TestShouldAllowMultipleSegments(t *testing.T) {
 	}
 
 	error = d.AddSegment(Segment{
-		ID:          uuid.New(),
+		Id:          uuid.New(),
 		Description: "S2",
 		Start:       time.Date(2023, 8, 20, 11, 0, 0, 0, time.UTC),
 		End:         time.Date(2023, 8, 20, 12, 0, 0, 0, time.UTC),
@@ -73,7 +73,7 @@ func TestShouldFailSegmentExceedsEndTime(t *testing.T) {
 
 	// Add a segment that covers the whole day and then some
 	s1 := Segment{
-		ID:          uuid.New(),
+		Id:          uuid.New(),
 		Description: "S1",
 		Start:       time.Date(2023, 8, 20, 9, 0, 0, 0, time.UTC),
 		End:         time.Date(2023, 8, 20, 17, 1, 0, 0, time.UTC),
@@ -95,7 +95,7 @@ func TestShouldFailSegmentExceedsStartTime(t *testing.T) {
 
 	// Add a segment that covers the whole day but starts early
 	s1 := Segment{
-		ID:          uuid.New(),
+		Id:          uuid.New(),
 		Description: "S1",
 		Start:       time.Date(2023, 8, 20, 8, 59, 0, 0, time.UTC),
 		End:         time.Date(2023, 8, 20, 17, 0, 0, 0, time.UTC),
@@ -117,7 +117,7 @@ func TestShouldFailSegmentEndTimeBeforeStart(t *testing.T) {
 
 	// Add a segment that ends before it starts
 	s1 := Segment{
-		ID:          uuid.New(),
+		Id:          uuid.New(),
 		Description: "S1",
 		Start:       time.Date(2023, 8, 20, 11, 00, 0, 0, time.UTC), //11:00 am
 		End:         time.Date(2023, 8, 20, 10, 0, 0, 0, time.UTC),  //10:00 am, this is before the start time and invalid
@@ -131,5 +131,43 @@ func TestShouldFailSegmentEndTimeBeforeStart(t *testing.T) {
 
 	if error.Error() != "start time (2023-08-20 11:00:00 +0000 UTC) is after the end time (2023-08-20 10:00:00 +0000 UTC)" {
 		t.Fatalf("Unexpected error: %s", error)
+	}
+}
+
+func TestClearSegments(t *testing.T) {
+	d := initDay()
+
+	// Add a segment that covers the whole day
+	s1 := Segment{
+		Id:          uuid.New(),
+		Description: "S1",
+		Start:       time.Date(2023, 8, 20, 9, 0, 0, 0, time.UTC),
+		End:         time.Date(2023, 8, 20, 17, 0, 0, 0, time.UTC),
+	}
+
+	error := d.AddSegment(s1)
+
+	if error != nil {
+		t.Fatalf("Error adding segment: %s", error)
+	}
+
+	// Clear the segments
+	d.ClearSegments()
+
+	// count the number of segments and raise an error if it's not 0
+	if len(d.Segments) != 0 {
+		t.Fatalf("Expected 0 segments, got %d", len(d.Segments))
+	}
+
+	// ensure add segment works again
+	error = d.AddSegment(s1)
+
+	if error != nil {
+		t.Fatalf("Error adding segment: %s", error)
+	}
+
+	// count the number of segments and raise an error if it's not 1
+	if len(d.Segments) != 1 {
+		t.Fatalf("Expected 1 segments, got %d", len(d.Segments))
 	}
 }

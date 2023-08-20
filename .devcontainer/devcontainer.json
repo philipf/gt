@@ -15,7 +15,8 @@
 				"streetsidesoftware.code-spell-checker",
 				"GitHub.copilot",
 				"golang.go",
-				"mhutchie.git-graph"
+				"mhutchie.git-graph",
+				"github.vscode-github-actions"
 			]
 		}
 	}
