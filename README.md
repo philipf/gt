@@ -2,7 +2,7 @@
 ![Build workflow](https://github.com/philipf/gt/actions/workflows/go.yml/badge.svg)
 
 # gt
-GT (Go Time), is a CLI to manage time.
+GT (Go Time) is a CLI to manage time.
 
 This is used as a learning module for Go
 
@@ -13,3 +13,7 @@ This is used as a learning module for Go
 ```bash
 go install github.com/philipf/gt/cmd/gt@latest
 ```
+## Next steps
+- Update existing tests to consistently use the asserts package
+- Revisit the code structure for the domain layer. This doesn't feel like idiomatic Go yet
+  
