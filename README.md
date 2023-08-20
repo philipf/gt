@@ -6,3 +6,9 @@ GT (Go Time), is a CLI to manage time.
 This is used as a learning module for Go
 
 
+## Install
+(There is nothing to see yet)
+
+```bash
+go install github.com/philipf/gt/cmd/gt@latest
+```
