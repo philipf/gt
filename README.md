@@ -14,6 +14,8 @@ This is used as a learning module for Go
 go install github.com/philipf/gt/cmd/gt@latest
 ```
 ## Next steps
-- Update existing tests to consistently use the asserts package
 - Revisit the code structure for the domain layer. This doesn't feel like idiomatic Go yet
-  
+- Fix error handling, using Error types
+
+## Done  
+- Update existing tests to consistently use the asserts package
