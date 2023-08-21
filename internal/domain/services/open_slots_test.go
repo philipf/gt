@@ -56,7 +56,7 @@ func TestFindOpenSlots(t *testing.T) {
 	day := buildDummyDay()
 	openSlots := FindOpenSlots(day)
 
-	// Test that 4 open slots are returned
+	// Test that 5 open slots are returned
 	assert.Equal(t, 5, len(openSlots))
 
 	expectedOpenSlots := []OpenSlot{
