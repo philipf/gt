@@ -1,4 +1,4 @@
-package models
+package calendar
 
 import (
 	"testing"
@@ -35,15 +35,19 @@ func TestNewDayShouldNotAllowDuplicateItem(t *testing.T) {
 	}
 
 	t1 := time.Date(2023, 8, 20, 0, 0, 0, 0, time.UTC)
-	_, error := p.AddDay(t1)
+	_, err := p.AddDay(t1)
 
-	assert.NoError(t, error, "Error adding day")
+	assert.NoError(t, err, "Error adding day")
 
 	t2 := time.Date(2023, 8, 20, 0, 0, 0, 0, time.UTC)
-	_, error = p.AddDay(t2)
+	_, err = p.AddDay(t2)
 
-	assert.Error(t, error, "Error should have been raised")
-	assert.EqualError(t, error, "day already exists for the provided date", "Error should have been raised: day already exists for the provided date")
+	assert.Error(t, err, "Error should have been raised")
+
+	var errExpected ErrDayAlreadyExists
+	assert.ErrorAs(t, err, &errExpected)
+	assert.Equal(t, t2, errExpected.Date, t2)
+
 	assert.Len(t, p.Days, 1, "Day should not have been added")
 }
 

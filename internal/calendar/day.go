@@ -1,5 +1,5 @@
 // Package domain defines the main constructs for managing daily work schedules.
-package models
+package calendar
 
 import (
 	"fmt"
@@ -63,7 +63,7 @@ func (d *Day) validateDay() error {
 
 // AddSegment attaches a new time segment to the current day.
 func (d *Day) AddSegment(s Segment) error {
-	err := validateSegment(d, s)
+	err := validateSegment(d, &s)
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func (d *Day) RemoveSegment(s Segment) {
 
 // UpdateSegment updates a segment in the day.
 func (d *Day) UpdateSegment(s Segment) error {
-	err := validateSegment(d, s)
+	err := validateSegment(d, &s)
 	if err != nil {
 		return err
 	}
@@ -106,20 +106,22 @@ func (d *Day) UpdateSegment(s Segment) error {
 }
 
 // validateSegment ensures the segment adheres to constraints related to start and end times.
-func validateSegment(d *Day, s Segment) error {
+func validateSegment(d *Day, s *Segment) error {
 	// Ensure segment's start time precedes its end time.
 	if s.Start.After(s.End) {
-		return fmt.Errorf("start time (%s) is after the end time (%s)", s.Start, s.End)
+		return ErrInvalidSegmentRange{Start: s.Start, End: s.End}
+		//return fmt.Errorf("start time (%s) is after the end time (%s)", s.Start, s.End)
 	}
 
 	// Ensure segment's start time isn't before the day's start time.
 	if s.Start.Before(d.Start) {
-		return fmt.Errorf("start time (%s) is before the start of the day (%s)", s.Start, d.Start)
+		return ErrSegmentOutsideOfDay{Segment: s, Day: d}
+
 	}
 
 	// Ensure segment's end time doesn't exceed the day's end time.
 	if s.End.After(d.End) {
-		return fmt.Errorf("end time (%s) is after the end of the day (%s)", s.End, d.End)
+		return ErrSegmentOutsideOfDay{Segment: s, Day: d}
 	}
 
 	return nil

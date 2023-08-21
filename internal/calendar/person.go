@@ -1,15 +1,11 @@
 // A person is the entity for which we associate their Calendars, Working days, Holidays and preferred working hours.
-package models
+package calendar
 
 import (
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
 )
-
-var ErrDayAlreadyExists = errors.New("day already exists for the provided date")
-var ErrDayNotFound = errors.New("day not found")
 
 type Person struct {
 	Id    uuid.UUID
@@ -44,7 +40,7 @@ func (p *Person) AddDay(date time.Time) (*Day, error) {
 	// Check if the day already exists.
 	for _, d := range p.Days {
 		if d.Date.Equal(date) {
-			return nil, ErrDayAlreadyExists
+			return nil, ErrDayAlreadyExists{Date: date}
 		}
 	}
 
@@ -53,9 +49,11 @@ func (p *Person) AddDay(date time.Time) (*Day, error) {
 		Id:   uuid.New(),
 		Date: date,
 
+		// TODO: remove defaults
 		// Default start date for a day is 9am.
 		Start: time.Date(date.Year(), date.Month(), date.Day(), 9, 0, 0, 0, date.Location()),
 
+		// TODO: remove defaults
 		// Default end date for a day is 5pm.
 		End: time.Date(date.Year(), date.Month(), date.Day(), 17, 0, 0, 0, date.Location()),
 	}
@@ -108,5 +106,5 @@ func (p *Person) RemoveDay(date time.Time) error {
 		}
 	}
 
-	return ErrDayNotFound
+	return ErrDayNotFound{Date: date}
 }

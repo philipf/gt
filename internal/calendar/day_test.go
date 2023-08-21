@@ -1,4 +1,4 @@
-package models
+package calendar
 
 import (
 	"testing"
@@ -62,7 +62,8 @@ func TestShouldFailSegmentExceedsEndTime(t *testing.T) {
 	}
 
 	err := d.AddSegment(s1)
-	expectedErrorMsg := "end time (2023-08-20 17:01:00 +0000 UTC) is after the end of the day (2023-08-20 17:00:00 +0000 UTC)"
+
+	expectedErrorMsg := "segment (2023-08-20 17:01:00 +0000 UTC) ends after the day (2023-08-20 17:00:00 +0000 UTC)"
 	assert.EqualError(t, err, expectedErrorMsg, "Unexpected error")
 }
 
@@ -77,7 +78,7 @@ func TestShouldFailSegmentExceedsStartTime(t *testing.T) {
 	}
 
 	err := d.AddSegment(s1)
-	expectedErrorMsg := "start time (2023-08-20 08:59:00 +0000 UTC) is before the start of the day (2023-08-20 09:00:00 +0000 UTC)"
+	expectedErrorMsg := "segment (2023-08-20 08:59:00 +0000 UTC) starts before the day (2023-08-20 09:00:00 +0000 UTC)"
 	assert.EqualError(t, err, expectedErrorMsg, "Unexpected error")
 }
 
@@ -92,6 +93,12 @@ func TestShouldFailSegmentEndTimeBeforeStart(t *testing.T) {
 	}
 
 	err := d.AddSegment(s1)
+
+	var expectedError ErrInvalidSegmentRange
+	assert.ErrorAs(t, err, &expectedError)
+	assert.Equal(t, expectedError.Start, s1.Start)
+	assert.Equal(t, expectedError.End, s1.End)
+
 	expectedErrorMsg := "start time (2023-08-20 11:00:00 +0000 UTC) is after the end time (2023-08-20 10:00:00 +0000 UTC)"
 	assert.EqualError(t, err, expectedErrorMsg, "Unexpected error")
 }
@@ -108,7 +115,6 @@ func TestClearSegments(t *testing.T) {
 
 	assert.NoError(t, d.AddSegment(s1), "Error adding segment")
 
-	// Clear the segments
 	d.ClearSegments()
 
 	assert.Equal(t, 0, len(d.Segments), "Expected 0 segments after clearing")

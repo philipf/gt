@@ -1,4 +1,4 @@
-package services
+package calendar
 
 import (
 	"fmt"
@@ -6,12 +6,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/philipf/gt/internal/domain/models"
 	"github.com/stretchr/testify/assert"
 )
 
-func buildDummyDay() models.Day {
-	d := models.Day{
+func buildDummyDay() Day {
+	d := Day{
 		Id:    uuid.New(),
 		Date:  time.Date(2023, 8, 20, 0, 0, 0, 0, time.UTC),
 		Start: time.Date(2023, 8, 20, 9, 0, 0, 0, time.UTC),
@@ -24,7 +23,7 @@ func buildDummyDay() models.Day {
 		startMin := offset % 60
 		endHour := startHour + 1
 
-		d.AddSegment(models.Segment{
+		d.AddSegment(Segment{
 			Id:          uuid.New(),
 			Description: fmt.Sprintf("S%d", i),
 			Start:       time.Date(2023, 8, 20, startHour, startMin, 0, 0, time.UTC),
@@ -54,7 +53,7 @@ func TestSegments(t *testing.T) {
 
 func TestFindOpenSlots(t *testing.T) {
 	day := buildDummyDay()
-	openSlots := FindOpenSlots(day)
+	openSlots := FindOpenSlots(&day)
 
 	// Test that 5 open slots are returned
 	assert.Equal(t, 5, len(openSlots))
