@@ -15,7 +15,14 @@ go install github.com/philipf/gt/cmd/gt@latest
 ```
 ## Next steps
 - Revisit the code structure for the domain layer. This doesn't feel like idiomatic Go yet
-- Fix error handling, using Error types
+    - breakdown?:
+        - calendar (bounded-context) / module  (ask chat-gpt what is difference between domain, bounded-context and module). have to be careful as module might clash with golang concepts
+            - model
+            - app_services
+            - domain_services
+            - repository
+        - infra??
 
 ## Done  
 - Update existing tests to consistently use the asserts package
+- Fix error handling, using Error types
