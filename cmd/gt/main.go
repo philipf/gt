@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	fmt.Println("GT Version 0.0.1")
+	fmt.Println("GT Version 0.0.2")
 
 	// Read the access token from the environment variable ACCESS_TOKEN
 	var accessToken = os.Getenv("ACCESS_TOKEN")
