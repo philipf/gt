@@ -36,7 +36,7 @@ func GetFindMeetingTimes(accessToken string) {
 	currentDate := time.Now().In(location)
 
 	// add 1 day to the current date
-	currentDate = currentDate.AddDate(0, 0, 1)
+	// currentDate = currentDate.AddDate(0, 0, 1)
 
 	startTime := currentDate.Format("2006-01-02") + "T09:00:00"
 	endTime := currentDate.Format("2006-01-02") + "T17:00:00"
