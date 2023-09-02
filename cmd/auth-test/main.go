@@ -13,6 +13,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	msgraphsdk "github.com/microsoftgraph/msgraph-sdk-go"
 	"github.com/microsoftgraph/msgraph-sdk-go/models"
+	"github.com/microsoftgraph/msgraph-sdk-go/models/odataerrors"
 	"github.com/microsoftgraph/msgraph-sdk-go/users"
 
 	auth "github.com/microsoft/kiota-authentication-azure-go"
@@ -27,7 +28,7 @@ func main() {
 
 	// Load .env files
 	// .env.local takes precedence (if present)
-	err := godotenv.Load("/workspaces/gt/.env.local")
+	err := godotenv.Load(".env.local")
 	//err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env", err)
@@ -56,9 +57,13 @@ func main() {
 	for _, list := range lists.GetValue() {
 		headers := abstractions.NewRequestHeaders()
 
-		var pageSize int32 = 5
+		var pageSize int32 = 50
+		var filter = "status ne 'completed'"
+
 		query := users.ItemTodoListsItemTasksRequestBuilderGetQueryParameters{
-			Top: &pageSize,
+			Top:    &pageSize,
+			Filter: &filter,
+			//Select: []string{"title", "status"}, //this doesn't work
 		}
 
 		options := users.ItemTodoListsItemTasksRequestBuilderGetRequestConfiguration{
@@ -73,10 +78,13 @@ func main() {
 			log.Fatalf("Error ByTodoTaskListIdString: %v\n", err)
 		}
 
+		fmt.Printf("Tasks Data: %+v\n", tasks)
+
 		pageIterator, err := graphcore.NewPageIterator[models.TodoTaskable](
 			tasks,
 			graphClient.GetAdapter(),
-			models.CreateTodoTaskFromDiscriminatorValue)
+			// models.CreateTodoTaskFromDiscriminatorValue
+			models.CreateTodoTaskCollectionResponseFromDiscriminatorValue)
 
 		if err != nil {
 			log.Fatalf("Error creating page iterator: %v\n", err)
@@ -84,10 +92,13 @@ func main() {
 
 		pageIterator.SetHeaders(headers)
 
+		var taskCount = 1
+
 		err = pageIterator.Iterate(
 			context.Background(),
 			func(task models.TodoTaskable) bool {
-				fmt.Printf("Task: %s\n", *task.GetTitle())
+				fmt.Printf("Task: %d] %s\n", taskCount, *task.GetTitle())
+				taskCount++
 				return true
 			})
 
@@ -220,4 +231,18 @@ func (g *GraphHelper) GetUser() (models.Userable, error) {
 		&users.UserItemRequestBuilderGetRequestConfiguration{
 			QueryParameters: &query,
 		})
+}
+
+func PrintOdataError(err error) {
+	switch err.(type) {
+	case *odataerrors.ODataError:
+		typed := err.(*odataerrors.ODataError)
+		fmt.Printf("error:", typed.Error())
+		if terr := typed.GetErrorEscaped(); terr != nil {
+			fmt.Printf("code: %s", *terr.GetCode())
+			fmt.Printf("msg: %s", *terr.GetMessage())
+		}
+	default:
+		fmt.Printf("%T > error: %#v", err, err)
+	}
 }
