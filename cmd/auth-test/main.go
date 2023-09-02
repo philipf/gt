@@ -15,8 +15,10 @@ import (
 	"github.com/microsoftgraph/msgraph-sdk-go/models"
 	"github.com/microsoftgraph/msgraph-sdk-go/users"
 
-	//"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	auth "github.com/microsoft/kiota-authentication-azure-go"
+	graphcore "github.com/microsoftgraph/msgraph-sdk-go-core"
+
+	abstractions "github.com/microsoft/kiota-abstractions-go"
 )
 
 func main() {
@@ -25,10 +27,10 @@ func main() {
 
 	// Load .env files
 	// .env.local takes precedence (if present)
-	godotenv.Load(".env.local")
-	err := godotenv.Load()
+	err := godotenv.Load("/workspaces/gt/.env.local")
+	//err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env")
+		log.Fatal("Error loading .env", err)
 	}
 
 	graphHelper := NewGraphHelper()
@@ -43,33 +45,78 @@ func main() {
 
 	greetUser(graphHelper)
 
-	lists, err := graphHelper.userClient.Me().Todo().Lists().Get(context.Background(), nil)
+	var graphClient = graphHelper.userClient
+
+	lists, err := graphClient.Me().Todo().Lists().Get(context.Background(), nil)
 
 	if err != nil {
-		fmt.Printf("Error creating list: %v\n", err)
+		fmt.Printf("Error creating lists: %v\n", err)
 	}
 
 	for _, list := range lists.GetValue() {
-		fmt.Println("List:", *list.GetDisplayName())
-		tasks, err := graphHelper.userClient.Me().Todo().Lists().ByTodoTaskListIdString(*list.GetId()).Tasks().Get(context.Background(), nil)
+		headers := abstractions.NewRequestHeaders()
+
+		var pageSize int32 = 5
+		query := users.ItemTodoListsItemTasksRequestBuilderGetQueryParameters{
+			Top: &pageSize,
+		}
+
+		options := users.ItemTodoListsItemTasksRequestBuilderGetRequestConfiguration{
+			Headers:         headers,
+			QueryParameters: &query,
+		}
+
+		listId := *list.GetId()
+		tasks, err := graphClient.Me().Todo().Lists().ByTodoTaskListIdString(listId).Tasks().Get(context.Background(), &options)
 
 		if err != nil {
-			fmt.Printf("Error getting tasks: %v\n", err)
+			log.Fatalf("Error ByTodoTaskListIdString: %v\n", err)
 		}
 
-		for _, task := range tasks.GetValue() {
-			fmt.Println("Task:", *task.GetTitle())
+		pageIterator, err := graphcore.NewPageIterator[models.TodoTaskable](
+			tasks,
+			graphClient.GetAdapter(),
+			models.CreateTodoTaskFromDiscriminatorValue)
+
+		if err != nil {
+			log.Fatalf("Error creating page iterator: %v\n", err)
 		}
 
-		//tasks.GetOdataNextLink()
+		pageIterator.SetHeaders(headers)
 
-		//https://learn.microsoft.com/en-us/graph/tutorials/go?tabs=aad&tutorial-step=5
-		// https://learn.microsoft.com/en-us/graph/sdks/paging?tabs=go
+		err = pageIterator.Iterate(
+			context.Background(),
+			func(task models.TodoTaskable) bool {
+				fmt.Printf("Task: %s\n", *task.GetTitle())
+				return true
+			})
 
-		// for t := range tasks.GetValue() {
-		// 	fmt.Println("Task:vv", t.GetTitle())
-		// }
+		if err != nil {
+			log.Fatalf("Error iterating over messages: %v\n", err)
+		}
 	}
+
+	//for _, list := range lists.GetValue() {
+	// 	fmt.Println("List:", *list.GetDisplayName())
+	// 	tasks, err := graphHelper.userClient.Me().Todo().Lists().ByTodoTaskListIdString(*list.GetId()).Tasks().Get(context.Background(), nil)
+
+	// 	if err != nil {
+	// 		fmt.Printf("Error getting tasks: %v\n", err)
+	// 	}
+
+	// 	for _, task := range tasks.GetValue() {
+	// 		fmt.Println("Task:", *task.GetTitle())
+	// 	}
+
+	// 	//tasks.GetOdataNextLink()
+
+	// 	//https://learn.microsoft.com/en-us/graph/tutorials/go?tabs=aad&tutorial-step=5
+	// 	// https://learn.microsoft.com/en-us/graph/sdks/paging?tabs=go
+
+	// 	// for t := range tasks.GetValue() {
+	// 	// 	fmt.Println("Task:vv", t.GetTitle())
+	// 	// }
+	// }
 }
 
 type GraphHelper struct {
