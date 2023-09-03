@@ -13,10 +13,10 @@ type Task struct {
 	Description  string
 	ExternalLink string
 	CreatedAt    time.Time
-	ModifiedAt   time.Time
+	UpdatedAt    time.Time
 }
 
-func (t *Task) Create(
+func CreateTask(
 	externalId, title, description, externalLink string,
 	createdAt, modifiedAt time.Time,
 ) (*Task, error) {
@@ -27,5 +27,7 @@ func (t *Task) Create(
 		Title:        title,
 		Description:  description,
 		ExternalLink: externalLink,
+		CreatedAt:    createdAt,
+		UpdatedAt:    modifiedAt,
 	}, nil
 }

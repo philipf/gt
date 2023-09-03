@@ -7,7 +7,7 @@ origin: {{.Channel}}
 ---
 
 # {{.Title}}
-
-An update about the Machine Learning course
+{{.Description}}
 
 ## Notes
+- [ ] Step 1

@@ -8,7 +8,7 @@ import (
 	"github.com/philipf/gt/internal/tasks"
 )
 
-func MapTasks(tasks []tasks.Task) ([]Action, error) {
+func MapTasks(tasks []tasks.Task) (*[]Action, error) {
 	actions := make([]Action, len(tasks))
 	for i, task := range tasks {
 		actions[i] = Action{
@@ -18,11 +18,11 @@ func MapTasks(tasks []tasks.Task) ([]Action, error) {
 			Description:  task.Description,
 			ExternalLink: task.ExternalLink,
 			CreatedAt:    task.CreatedAt,
-			UpdatedAt:    task.ModifiedAt,
+			UpdatedAt:    task.UpdatedAt,
 		}
 	}
 
-	return actions, nil
+	return &actions, nil
 }
 
 func ExportToMd(actions []Action, path string) {

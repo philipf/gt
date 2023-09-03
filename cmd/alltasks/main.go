@@ -1,4 +1,4 @@
-package main
+package alltasks
 
 import (
 	"context"
@@ -13,7 +13,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	msgraphsdk "github.com/microsoftgraph/msgraph-sdk-go"
 	"github.com/microsoftgraph/msgraph-sdk-go/models"
-	"github.com/microsoftgraph/msgraph-sdk-go/models/odataerrors"
 	"github.com/microsoftgraph/msgraph-sdk-go/users"
 
 	auth "github.com/microsoft/kiota-authentication-azure-go"
@@ -22,7 +21,7 @@ import (
 	abstractions "github.com/microsoft/kiota-abstractions-go"
 )
 
-func main() {
+func GetTasks() []models.TodoTaskable {
 	fmt.Println("Go Graph Tutorial")
 	fmt.Println()
 
@@ -54,6 +53,8 @@ func main() {
 		fmt.Printf("Error creating lists: %v\n", err)
 	}
 
+	var result []models.TodoTaskable
+
 	for _, list := range lists.GetValue() {
 		headers := abstractions.NewRequestHeaders()
 
@@ -83,7 +84,6 @@ func main() {
 		pageIterator, err := graphcore.NewPageIterator[models.TodoTaskable](
 			tasks,
 			graphClient.GetAdapter(),
-			// models.CreateTodoTaskFromDiscriminatorValue
 			models.CreateTodoTaskCollectionResponseFromDiscriminatorValue)
 
 		if err != nil {
@@ -97,7 +97,8 @@ func main() {
 		err = pageIterator.Iterate(
 			context.Background(),
 			func(task models.TodoTaskable) bool {
-				fmt.Printf("Task: %d] %s\n", taskCount, *task.GetTitle())
+				//fmt.Printf("Task: %d] %s\n", taskCount, *task.GetTitle())
+				result = append(result, task)
 				taskCount++
 				return true
 			})
@@ -105,7 +106,10 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error iterating over messages: %v\n", err)
 		}
+
 	}
+
+	return result
 
 	//for _, list := range lists.GetValue() {
 	// 	fmt.Println("List:", *list.GetDisplayName())
@@ -233,16 +237,16 @@ func (g *GraphHelper) GetUser() (models.Userable, error) {
 		})
 }
 
-func PrintOdataError(err error) {
-	switch err.(type) {
-	case *odataerrors.ODataError:
-		typed := err.(*odataerrors.ODataError)
-		fmt.Printf("error:", typed.Error())
-		if terr := typed.GetErrorEscaped(); terr != nil {
-			fmt.Printf("code: %s", *terr.GetCode())
-			fmt.Printf("msg: %s", *terr.GetMessage())
-		}
-	default:
-		fmt.Printf("%T > error: %#v", err, err)
-	}
-}
+// func PrintOdataError(err error) {
+// 	switch err.(type) {
+// 	case *odataerrors.ODataError:
+// 		typed := err.(*odataerrors.ODataError)
+// 		fmt.Printf("error:", typed.Error())
+// 		if terr := typed.GetErrorEscaped(); terr != nil {
+// 			fmt.Printf("code: %s", *terr.GetCode())
+// 			fmt.Printf("msg: %s", *terr.GetMessage())
+// 		}
+// 	default:
+// 		fmt.Printf("%T > error: %#v", err, err)
+// 	}
+// }
