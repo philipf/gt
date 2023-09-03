@@ -29,7 +29,7 @@ type Action struct {
 	Description  string
 	ExternalLink string
 	CreatedAt    time.Time
-	ModifiedAt   time.Time
+	UpdatedAt    time.Time
 	Due          time.Time
 	Status       string
 	Channel      string
@@ -39,7 +39,7 @@ type Action struct {
 
 func CreateAction(
 	externalID, title, description, externalLink string,
-	createdAt, modifiedAt time.Time,
+	createdAt, updatedAt time.Time,
 	status string,
 ) (*Action, error) {
 
@@ -50,7 +50,7 @@ func CreateAction(
 		Description:  description,
 		ExternalLink: externalLink,
 		CreatedAt:    createdAt,
-		ModifiedAt:   modifiedAt,
+		UpdatedAt:    updatedAt,
 		Status:       status,
 	}, nil
 }

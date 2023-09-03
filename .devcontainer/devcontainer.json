@@ -12,7 +12,6 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"streetsidesoftware.code-spell-checker",
 				"GitHub.copilot",
 				"golang.go",
 				"mhutchie.git-graph",
@@ -21,7 +20,6 @@
 		}
 	},
 	
-
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 

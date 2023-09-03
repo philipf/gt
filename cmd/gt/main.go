@@ -29,14 +29,4 @@ func main() {
 	}
 
 	gtd.ExportToMd(actions, "./inbox/")
-
-	// theTime := time.Date(2021, 8, 15, 14, 30, 45, 100, time.Local)
-	theTime := time.Now()
-	fmt.Println("The time is", theTime)
-
-	theTime = theTime.Local()
-	fmt.Println("The local time is", theTime)
-
-	fmt.Println(theTime.Format("2006-1-2 15:4:5"))
-
 }

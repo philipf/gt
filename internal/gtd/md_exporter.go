@@ -2,6 +2,7 @@ package gtd
 
 import (
 	"os"
+	"path/filepath"
 	"text/template"
 
 	"github.com/philipf/gt/internal/tasks"
@@ -17,7 +18,7 @@ func MapTasks(tasks []tasks.Task) ([]Action, error) {
 			Description:  task.Description,
 			ExternalLink: task.ExternalLink,
 			CreatedAt:    task.CreatedAt,
-			ModifiedAt:   task.ModifiedAt,
+			UpdatedAt:    task.ModifiedAt,
 		}
 	}
 
@@ -34,13 +35,24 @@ func ExportToMd(actions []Action, path string) {
 			panic(err)
 		}
 
-		tmpl.Execute(os.Stdout, model)
+		//tmpl.Execute(os.Stdout, model)
+
+		// Create or open the file for writing
+
+		// check if the path exists and create it if not
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			os.Mkdir(path, 0755)
+		}
+
+		// TODO: make sure the action.Title is a valid filename (no spaces, etc)
+		filename := filepath.Join(path, action.Title+".md")
+		file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+
+		tmpl.Execute(file, model)
 	}
-
-	// Check if the path exists and create it if it doesn't
-
-	// Create a file with the name of the action
-	// Write the action to the file
-	// Close the file
 
 }
