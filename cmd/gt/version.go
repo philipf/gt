@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Version of the GT CLI",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("GT version 0.0.5")
+		fmt.Println("GT version 0.0.6")
 	},
 }
 
