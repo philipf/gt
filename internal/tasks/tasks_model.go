@@ -14,6 +14,7 @@ type Task struct {
 	ExternalLink string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
+	DueAt        time.Time
 }
 
 func CreateTask(

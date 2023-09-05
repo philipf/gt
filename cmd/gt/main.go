@@ -3,6 +3,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	alltasks "github.com/philipf/gt/cmd/alltasks"
 	"github.com/philipf/gt/internal/gtd"
@@ -10,14 +11,40 @@ import (
 )
 
 func main() {
-	fmt.Println("GT Version 0.0.3")
+	fmt.Println("GT Version 0.0.4")
 
+	dt := time.Now()
+	externalId := ""
+	externalLink := ""
+
+	title := "get cli"
+	description := "create a cli for gt"
+
+	action, err := gtd.CreateAction(externalId, title, description, externalLink, dt, dt, gtd.In)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(action)
+
+	err = gtd.ActionToMd(action, "./inbox/")
+	if err != nil {
+		panic(err)
+	}
+}
+
+func OldMain() {
 	tsks := alltasks.GetTasks()
 
 	taskList := []tasks.Task{}
 
 	for _, t := range tsks {
-		task, err := tasks.CreateTask(*t.GetId(), *t.GetTitle(), *t.GetBody().GetContent(), "TODO:exxternallink", *t.GetCreatedDateTime(), *t.GetLastModifiedDateTime())
+		var externalLink string = ""
+
+		task, err := tasks.CreateTask(*t.GetId(), *t.GetTitle(), *t.GetBody().GetContent(), externalLink, *t.GetCreatedDateTime(), *t.GetLastModifiedDateTime())
+
+		//task.DueAt = *t.GetDueDateTime().
+
 		if err != nil {
 			panic(err)
 		}
@@ -45,5 +72,5 @@ func main() {
 	// 	fmt.Println(action)
 	// }
 
-	gtd.ExportToMd(*actions, "./inbox/")
+	gtd.ActionsToMd(actions, "./inbox/")
 }
