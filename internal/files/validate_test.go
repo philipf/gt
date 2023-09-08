@@ -1,4 +1,4 @@
-package paths
+package files
 
 import "testing"
 
@@ -19,7 +19,7 @@ func TestTitleToFilename(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		result := TitleToFilename(tt.title)
+		result := ToValidFilename(tt.title)
 		if result != tt.expected {
 			t.Errorf("For title %q, expected filename %q but got %q", tt.title, tt.expected, result)
 		}

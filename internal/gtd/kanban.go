@@ -1,3 +1,4 @@
+// Package gtd (Getting Things Done) offers utilities to manage a Kanban-style TODO list using the Obsidian Kanban plugin.
 package gtd
 
 import (
@@ -8,14 +9,16 @@ import (
 )
 
 const (
-	// In the Kanban board, headings are prefixed with ## and a space
+	// In the Kanban board, headings are prefixed with ## and a space.
 	headingDiscriminator = "## "
 
-	// To do items are prefixed with either a - [ ] or - [x] depending on whether they are done or not
+	// To-do items are prefixed with either a - [ ] or - [x] depending on their completion status.
 	todoDiscriminator     = "- [ ] "
 	todoDiscriminatorDone = "- [x] "
 )
 
+// findLastToDo locates the last to-do item under a specified heading in a list of lines.
+// Returns the index of the last to-do or the heading if no to-dos are found under it.
 func findLastToDo(lines []string, heading string) int {
 	headingToFind := headingDiscriminator + heading
 
@@ -23,32 +26,26 @@ func findLastToDo(lines []string, heading string) int {
 	headingIdx := -1
 	lastTodo := -1
 
-	// Basic state machine to find the last to do in the In heading
+	// A state machine to find the last to-do in the specified heading.
 	for i, line := range lines {
 		line = strings.TrimSpace(line)
 
+		// Check if we're inside the desired heading section.
 		if insideHeading {
-			// The current state is inside the In heading, so we need to check if we are still inside it
-			// and record the last todo, if any
-
+			// If we find a to-do item, record its index.
 			if strings.HasPrefix(line, todoDiscriminator) || strings.HasPrefix(line, todoDiscriminatorDone) {
-				// A to do was found, but we don't know if it's the last one yet
 				lastTodo = i
 				continue
 			} else if strings.HasPrefix(line, headingDiscriminator) {
-				// Found a new heading, so we are no longer inside the heading we were looking for and we can stop
-				// Return the last todo, if any was found otherwise the last line of the heading we were looking for
-				if lastTodo == -1 {
-					return headingIdx
-				} else {
-					return lastTodo
-				}
+				// If we encounter another heading, the previous heading section has ended.
+				// Return the index of the last found to-do or the heading itself.
+				return max(lastTodo, headingIdx)
 			}
 		} else if line == headingToFind {
-			// We found the heading we were looking for, so we set the state to inside the heading
+			// Mark that we've entered the desired heading section.
 			insideHeading = true
 			headingIdx = i
-			lastTodo = headingIdx // this is a safety in case only the In heading is found
+			lastTodo = headingIdx
 			continue
 		}
 	}
@@ -56,40 +53,36 @@ func findLastToDo(lines []string, heading string) int {
 	return lastTodo
 }
 
+// readFile reads the content of a file at a given path and returns its lines.
 func readFile(path string) ([]string, error) {
-	// Open the file for reading
+	// Open the file for reading.
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
-	// Make sure we close the file when we're done
 	defer file.Close()
 
-	// Create a new scanner that reads from the file
+	var lines []string
 	scanner := bufio.NewScanner(file)
 
-	// Create a slice of strings to store the lines in
-	var lines []string
-
-	// Use the scanner to loop through all the lines in the file
+	// Scan each line and append it to the lines slice.
 	for scanner.Scan() {
-		// Add the line to the lines slice
 		lines = append(lines, scanner.Text())
 	}
 
-	// Return the lines and any error that happened
+	// Return the collected lines and any scanning error.
 	return lines, scanner.Err()
 }
 
+// writeFile writes a slice of lines to a file at the specified path.
 func writeFile(path string, lines []string) error {
+	// Join lines with newline and write to the file.
 	err := os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0644)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
+// InsertTodo inserts a new to-do item under a specified heading in a file.
+// If withLink is true, the to-do item is formatted as a link.
 func InsertTodo(path, heading, todo string, withLink bool) error {
 	if withLink {
 		todo = fmt.Sprintf("[[%s]]", todo)
@@ -100,19 +93,25 @@ func InsertTodo(path, heading, todo string, withLink bool) error {
 		return err
 	}
 
+	// Find the position to insert the new to-do.
 	lastTodo := findLastToDo(lines, heading)
 	if lastTodo == -1 {
 		return fmt.Errorf("could not find heading [%s] in the file [%s]", heading, path)
 	}
 
-	// Add the new to do in the correct location in the slice
+	// Insert the new to-do at the correct position.
 	todo = todoDiscriminator + todo
 	lines = append(lines[:lastTodo+1], append([]string{todo}, lines[lastTodo+1:]...)...)
 
+	// Write the updated lines back to the file.
 	err = writeFile(path, lines)
-	if err != nil {
-		return err
-	}
+	return err
+}
 
-	return nil
+// max returns the maximum of two integers.
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
