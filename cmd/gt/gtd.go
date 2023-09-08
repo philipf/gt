@@ -2,10 +2,11 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
+	"strings"
 
 	"github.com/philipf/gt/internal/gtd"
 	"github.com/spf13/cobra"
@@ -15,72 +16,15 @@ import (
 var gtdCmd = &cobra.Command{
 	Use:   "gtd",
 	Short: "Create a new GTD action",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long: `Create a new GTD action. This will create a new action in the inbox and add a new todo to the kanban board.
+	If now description is provided, only the todo will be added to the kanban board.`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		dt := time.Now()
-		externalId := ""
-		externalLink := ""
-
-		title, err := getInputWithPrompt("Please enter a title:")
+		err := promptForAction()
 		if err != nil {
-			panic(err)
-		}
-
-		description, err := getInputWithPrompt("Please enter a description:")
-		if err != nil {
-			panic(err)
-		}
-
-		action, err := gtd.CreateAction(externalId, title, description, externalLink, dt, dt, gtd.In)
-		if err != nil {
-			panic(err)
-		}
-
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			panic(err)
-		}
-
-		inTemplate := filepath.Join(homeDir, "gt", "in.md")
-
-		// check if inTemplate exists
-		if _, err := os.Stat(inTemplate); os.IsNotExist(err) {
-			panic(err)
-		}
-
-		// Add a new todo to the kanban board
-		kanbanPath := "G:/My Drive/SecondBrain/_GTD/_Board.md"
-		todo := fmt.Sprintf("[[%s]]", action.Title)
-		gtd.InsertTodo(kanbanPath, "In", todo)
-
-		// Add a new action, in the form a markdown file, to the inbox
-		inboxPath := "G:/My Drive/SecondBrain/_GTD/Inbox"
-
-		err = gtd.ActionToMd(action, inTemplate, inboxPath)
-		if err != nil {
-			panic(err)
+			fmt.Println(err)
 		}
 	},
-}
-
-func getInputWithPrompt(prompt string) (string, error) {
-	fmt.Println(prompt)
-	scanner := bufio.NewScanner(os.Stdin)
-	if scanner.Scan() {
-		input := scanner.Text()
-		return input, nil
-	}
-	if err := scanner.Err(); err != nil {
-		fmt.Println("Error reading input:", err)
-		return "", err
-	}
-	return "", nil
 }
 
 func init() {
@@ -95,4 +39,136 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// actionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func promptForAction() error {
+	// User input
+	title, err := getUserInput("Action title:", false)
+	if err != nil {
+		return err
+	}
+	if title == "" {
+		return errors.New("title cannot be empty")
+	}
+
+	description, err := getUserInput("Description (optional):", true)
+	if err != nil {
+		return err
+	}
+
+	// Create a new action, this is an in memory representation of the action and will be persisted later
+	action, err := gtd.CreateBasicAction(title, description, "cli")
+	if err != nil {
+		return err
+	}
+
+	containsDescription := strings.TrimSpace(action.Description) != ""
+
+	// Add a new todo to the kanban board
+	err = addToKanban(action.Title, containsDescription)
+	if err == nil {
+		fmt.Println("To-do added to kanban board")
+	} else {
+		return err
+	}
+
+	// Exist if no description was provided
+	if !containsDescription {
+		return nil
+	}
+
+	err = addDescriptionNote(action)
+	if err == nil {
+		fmt.Println("To-do and description added")
+	} else {
+		return err
+	}
+
+	return nil
+}
+
+func addDescriptionNote(action *gtd.Action) error {
+	// check if inTemplate exists
+	// Add a new action, in the form a markdown file, to the inbox
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	inTemplate := filepath.Join(homeDir, "gt", "in.md")
+
+	if _, err := os.Stat(inTemplate); os.IsNotExist(err) {
+		return err
+	}
+
+	inboxPath := "G:/My Drive/SecondBrain/_GTD/Inbox"
+
+	err = gtd.ActionToMd(action, inTemplate, inboxPath)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func addToKanban(todo string, withLink bool) error {
+	kanbanPath := "G:/My Drive/SecondBrain/_GTD/_Board.md"
+	err := gtd.InsertTodo(kanbanPath, "In", todo, withLink)
+	return err
+}
+
+func getUserInput(prompt string, allowMultiLine bool) (string, error) {
+	fmt.Println(prompt)
+
+	if !allowMultiLine {
+		return readSingleLineInput()
+	} else {
+		lines, err := readMultiLineInput()
+		if err != nil {
+			return "", err
+		}
+		result := strings.Join(lines, "\n")
+		return result, nil
+	}
+}
+
+func readSingleLineInput() (string, error) {
+	scanner := bufio.NewScanner(os.Stdin)
+	if scanner.Scan() {
+		input := strings.TrimSpace(scanner.Text())
+
+		return input, nil
+	}
+
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+
+	return "", nil
+}
+
+// Multi line logic allows the user to enter multiple lines of text and ends when the users enters a full stop on a new line
+func readMultiLineInput() ([]string, error) {
+
+	scanner := bufio.NewScanner(os.Stdin)
+	var lines []string
+	for scanner.Scan() {
+		input := strings.TrimSpace(scanner.Text())
+
+		// If is the first line and the user didn't enter anything, return an empty string, this a quick way to exit the prompt
+		if len(lines) == 0 && input == "" {
+			return lines, nil
+		}
+
+		if input == "." {
+			break
+		}
+
+		lines = append(lines, input)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return lines, err
+	}
+
+	return lines, nil
 }

@@ -90,7 +90,11 @@ func writeFile(path string, lines []string) error {
 	return nil
 }
 
-func InsertTodo(path, heading, todo string) error {
+func InsertTodo(path, heading, todo string, withLink bool) error {
+	if withLink {
+		todo = fmt.Sprintf("[[%s]]", todo)
+	}
+
 	lines, err := readFile(path)
 	if err != nil {
 		return err

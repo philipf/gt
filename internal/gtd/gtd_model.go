@@ -37,8 +37,12 @@ type Action struct {
 	// Next action
 }
 
+func CreateBasicAction(title, description, channel string) (*Action, error) {
+	return CreateAction("", title, description, "", channel, time.Now(), time.Now(), In)
+}
+
 func CreateAction(
-	externalID, title, description, externalLink string,
+	externalID, title, description, externalLink, channel string,
 	createdAt, updatedAt time.Time,
 	status string,
 ) (*Action, error) {
@@ -52,6 +56,7 @@ func CreateAction(
 		CreatedAt:    createdAt,
 		UpdatedAt:    updatedAt,
 		Status:       status,
+		Channel:      channel,
 	}, nil
 }
 
