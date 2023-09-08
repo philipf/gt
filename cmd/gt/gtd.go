@@ -54,10 +54,15 @@ to quickly create a Cobra application.`,
 			panic(err)
 		}
 
-		//outputPath := "./inbox"
-		outputPath := "G:/My Drive/SecondBrain/_GTD/Inbox"
+		// Add a new todo to the kanban board
+		kanbanPath := "G:/My Drive/SecondBrain/_GTD/_Board.md"
+		todo := fmt.Sprintf("[[%s]]", action.Title)
+		gtd.InsertTodo(kanbanPath, "In", todo)
 
-		err = gtd.ActionToMd(action, inTemplate, outputPath)
+		// Add a new action, in the form a markdown file, to the inbox
+		inboxPath := "G:/My Drive/SecondBrain/_GTD/Inbox"
+
+		err = gtd.ActionToMd(action, inTemplate, inboxPath)
 		if err != nil {
 			panic(err)
 		}
