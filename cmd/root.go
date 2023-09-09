@@ -1,8 +1,12 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/philipf/gt/internal/settings"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -34,4 +38,8 @@ func init() {
 func initConfig() {
 	err := settings.Init()
 	cobra.CheckErr(err)
+
+	fmt.Println("setting open AI key")
+	os.Setenv("OPENAI_API_KEY", viper.GetString("ai.openAiKey"))
+
 }

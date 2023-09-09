@@ -4,13 +4,25 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
+	"text/template"
+	"time"
 
 	"github.com/philipf/gt/internal/console"
 	"github.com/philipf/gt/internal/gtd"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+
+	"github.com/tmc/langchaingo/jsonschema"
+	"github.com/tmc/langchaingo/llms"
+	"github.com/tmc/langchaingo/llms/openai"
+	"github.com/tmc/langchaingo/schema"
 )
 
 // newCmd represents the new command
@@ -27,9 +39,7 @@ to quickly create a Cobra application.`,
 		var err error
 
 		if UseAi {
-			//err := promptForActionUsingAi()
-			fmt.Println("AI not implemented yet")
-			err = nil
+			err = promptForActionUsingAi()
 		} else {
 			err = promptForAction()
 		}
@@ -67,6 +77,12 @@ func promptForAction() error {
 	}
 
 	// Create a new action, this is an in memory representation of the action and will be persisted later
+	// Add a new todo to the kanban board
+	// Exist if no description was provided
+	return addAction(title, description)
+}
+
+func addAction(title string, description string) error {
 	action, err := gtd.CreateBasicAction(title, description, "cli")
 	if err != nil {
 		return err
@@ -74,7 +90,6 @@ func promptForAction() error {
 
 	containsDescription := strings.TrimSpace(action.Description) != ""
 
-	// Add a new todo to the kanban board
 	err = gtd.AddToKanban(action.Title, containsDescription)
 	if err == nil {
 		fmt.Println("To-do added to kanban board")
@@ -82,7 +97,6 @@ func promptForAction() error {
 		return err
 	}
 
-	// Exist if no description was provided
 	if !containsDescription {
 		return nil
 	}
@@ -110,4 +124,112 @@ func getUserInput(prompt string, allowMultiLine bool) (string, error) {
 		result := strings.Join(lines, "\n")
 		return result, nil
 	}
+}
+
+func promptForActionUsingAi() error {
+	input, err := getUserInput("Enter input to create an action from:", true)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Processing....")
+
+	llm, err := openai.NewChat(openai.WithModel(viper.GetString("ai.openAiModel")))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	templateStr := viper.GetString("gtd.actionPrompt.user")
+	temperature := viper.GetFloat64("gtd.actionPrompt.temperature")
+
+	t := template.Must(template.New("gtdTemplate").Parse(templateStr))
+
+	data := map[string]interface{}{
+		"name":        viper.GetString("personal.name"),
+		"surname":     viper.GetString("personal.surname"),
+		"company":     viper.GetString("personal.company"),
+		"currentDate": time.Now().Format(time.RFC3339),
+		"input":       input,
+	}
+
+	var resultBuffer bytes.Buffer
+
+	err = t.Execute(&resultBuffer, data)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	prompt := resultBuffer.String()
+
+	ctx := context.Background()
+	completion, err := llm.Call(ctx, []schema.ChatMessage{
+		schema.HumanChatMessage{Content: prompt}, // For some reason specifying a system message causes GPT-4 to ignore the FunctionCall??
+	}, llms.WithTemperature(temperature),
+		llms.WithFunctions(functions),
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if completion.FunctionCall == nil {
+		log.Fatal("No function call returned")
+	}
+
+	// Store the the function call arguments in a map by first parsing it to json
+	var aiResponse map[string]string
+
+	err = json.Unmarshal([]byte(completion.FunctionCall.Arguments), &aiResponse)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Print the action and summary to the console
+	fmt.Println("--------------------------------------------")
+	fmt.Println("Action: ", aiResponse["action"])
+	fmt.Println("Summary: ", aiResponse["summary"])
+	fmt.Println("--------------------------------------------")
+
+	// Ask the user if they want to add the action
+	fmt.Println("Do you want to add this action? [y]/n")
+	shouldUse, err := console.ReadSingleLineInput()
+	if err != nil {
+		return err
+	}
+
+	shouldUse = strings.TrimSpace(strings.ToLower(shouldUse))
+
+	if shouldUse == "" || shouldUse == "y" {
+		return addAction(aiResponse["action"], aiResponse["summary"])
+	} else {
+		return promptForAction()
+	}
+}
+
+var functions = []llms.FunctionDefinition{
+	{
+		Name:        "getAction",
+		Description: "Get an action, summary and due date from the user",
+		Parameters: jsonschema.Definition{
+			Type: jsonschema.Object,
+			Properties: map[string]jsonschema.Definition{
+				"action": {
+					Type:        jsonschema.String,
+					Description: "Action to be taken, in less than 10 words",
+				},
+				"summary": {
+					Type:        jsonschema.String,
+					Description: "A summary of the user input, proof read and edited to be concise to less than 200 words",
+				},
+				"dueDate": {
+					Type:        jsonschema.String,
+					Description: "Due date of the action if it can be determined",
+				},
+			},
+			Required: []string{"action", "summary"},
+		},
+	},
 }

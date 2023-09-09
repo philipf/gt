@@ -97,6 +97,7 @@ externalId: {{.ExternalID}}
 }
 
 func setViperDefaults() {
+	// Kanban settings
 	kanbanSettings := make(map[string]string)
 
 	kanbanSettings["basePath"] = "G:/My Drive/SecondBrain"
@@ -106,6 +107,24 @@ func setViperDefaults() {
 	kanbanSettings["In"] = "In"
 
 	viper.SetDefault("kanban", kanbanSettings)
+
+	// AI settings
+	openAiSettings := make(map[string]string)
+	openAiSettings["openAiKey"] = "<your key here from https://platform.openai.com/account/api-keys>"
+	//openAiSettings["openAiModel"] = "gpt-3.5-turbo"
+	openAiSettings["openAiModel"] = "gpt-4"
+
+	viper.SetDefault("ai", openAiSettings)
+
+	// GTD settings
+	gtdSettings := make(map[string]string)
+	gtdSettings["actionPrompt.user"] = `I am {{.name}} {{.surname}} and work for {{.company}}, you are an efficient task master using the Getting Things Done method, your job is to extract the next action for me and to provide a summary from supplied emails or online conversations. 
+It is now {{.currentDate}}, use: 
+{{.input}}`
+	gtdSettings["agctionPrompt.temperature"] = "0.7"
+
+	viper.SetDefault("gtd", gtdSettings)
+
 }
 
 func GetInTemplatePath() string {
