@@ -100,7 +100,7 @@ func setViperDefaults() {
 	kanbanSettings := make(map[string]string)
 
 	kanbanSettings["basePath"] = "G:/My Drive/SecondBrain"
-	kanbanSettings["inboxPath"] = "_GTD/Inbox"
+	kanbanSettings["inboxPath"] = "_GTD"
 	kanbanSettings["boardPath"] = "_GTD/_Board.md"
 	kanbanSettings["inTemplate"] = defaultInTemplate
 	kanbanSettings["In"] = "In"
