@@ -3,11 +3,7 @@
 
 # gt - Go Time
 
-{% warning  %}
-
-**Warning:** Work in progress, will most likely only work on my machine.
-
-{% endwarning  %}
+> **Warning:** Work in progress, will most likely only work on my machine.
 
 GT (Go Time) is a CLI to improve my productivity. The current feature set includes:
 - `gt gtd`:  Creates a new GTD action and saves it my Obsidian Kanban board
