@@ -97,8 +97,17 @@ externalId: {{.ExternalID}}
 }
 
 func setViperDefaults() {
+	// Personal settings
+	personalSettings := make(map[string]interface{})
+	personalSettings["name"] = "<name>"
+	personalSettings["surname"] = "<surname>"
+	personalSettings["company"] = "<company>"
+	personalSettings["email"] = "<email optional>"
+
+	viper.SetDefault("personal", personalSettings)
+
 	// Kanban settings
-	kanbanSettings := make(map[string]string)
+	kanbanSettings := make(map[string]interface{})
 
 	kanbanSettings["basePath"] = "G:/My Drive/SecondBrain"
 	kanbanSettings["inboxPath"] = "_GTD"
@@ -109,7 +118,7 @@ func setViperDefaults() {
 	viper.SetDefault("kanban", kanbanSettings)
 
 	// AI settings
-	openAiSettings := make(map[string]string)
+	openAiSettings := make(map[string]interface{})
 	openAiSettings["openAiKey"] = "<your key here from https://platform.openai.com/account/api-keys>"
 	//openAiSettings["openAiModel"] = "gpt-3.5-turbo"
 	openAiSettings["openAiModel"] = "gpt-4"
@@ -117,11 +126,11 @@ func setViperDefaults() {
 	viper.SetDefault("ai", openAiSettings)
 
 	// GTD settings
-	gtdSettings := make(map[string]string)
+	gtdSettings := make(map[string]interface{})
 	gtdSettings["actionPrompt.user"] = `I am {{.name}} {{.surname}} and work for {{.company}}, you are an efficient task master using the Getting Things Done method, your job is to extract the next action for me and to provide a summary from supplied emails or online conversations. 
 It is now {{.currentDate}}, use: 
 {{.input}}`
-	gtdSettings["agctionPrompt.temperature"] = "0.7"
+	gtdSettings["agctionPrompt.temperature"] = 0.7
 
 	viper.SetDefault("gtd", gtdSettings)
 
