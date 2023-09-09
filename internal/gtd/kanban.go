@@ -60,6 +60,7 @@ func readFile(path string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	defer file.Close()
 
 	var lines []string
@@ -90,7 +91,7 @@ func InsertTodo(path, heading, todo string, withLink bool) error {
 
 	lines, err := readFile(path)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not open the Kanban boardPath [%s]: %w", path, err)
 	}
 
 	// Find the position to insert the new to-do.

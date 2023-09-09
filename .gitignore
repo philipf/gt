@@ -22,3 +22,6 @@ go.work
 .env.local
 
 inbox/
+config.yaml
+gt
+viper

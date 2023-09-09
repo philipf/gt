@@ -1,14 +1,14 @@
-package main
+package cmd
 
 import (
 	"bufio"
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/philipf/gt/internal/gtd"
+	"github.com/philipf/gt/internal/settings"
 	"github.com/spf13/cobra"
 )
 
@@ -88,22 +88,14 @@ func promptForAction() error {
 }
 
 func addDescriptionNote(action *gtd.Action) error {
-	// check if inTemplate exists
-	// Add a new action, in the form a markdown file, to the inbox
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-
-	inTemplate := filepath.Join(homeDir, "gt", "in.md")
-
+	inTemplate := settings.GetInTemplatePath()
 	if _, err := os.Stat(inTemplate); os.IsNotExist(err) {
 		return err
 	}
 
-	inboxPath := "G:/My Drive/SecondBrain/_GTD/Inbox"
+	inboxPath := settings.GetKanbanInboxPath()
 
-	err = gtd.ActionToMd(action, inTemplate, inboxPath)
+	err := gtd.ActionToMd(action, inTemplate, inboxPath)
 	if err != nil {
 		return err
 	}
@@ -111,8 +103,8 @@ func addDescriptionNote(action *gtd.Action) error {
 }
 
 func addToKanban(todo string, withLink bool) error {
-	kanbanPath := "G:/My Drive/SecondBrain/_GTD/_Board.md"
-	err := gtd.InsertTodo(kanbanPath, "In", todo, withLink)
+	path := settings.GetKanbanBoardPath()
+	err := gtd.InsertTodo(path, settings.GetKanbanInColumn(), todo, withLink)
 	return err
 }
 
