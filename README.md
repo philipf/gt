@@ -1,28 +1,26 @@
 [![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/philipf/gt)
 ![Build workflow](https://github.com/philipf/gt/actions/workflows/go.yml/badge.svg)
 
-# gt
-GT (Go Time) is a CLI to manage time.
+# gt - Go Time
 
-This is used as a learning module for Go
+{% warning  %}
+
+**Warning:** Work in progress, will most likely only work on my machine.
+
+{% endwarning  %}
+
+GT (Go Time) is a CLI to improve my productivity. The current feature set includes:
+- `gt gtd`:  Creates a new GTD action and saves it my Obsidian Kanban board
+- `gt settings`: Prints the configured settings
+- `gt version`: Prints the version of the CLI
 
 
 ## Install
-(There is nothing to see yet)
 
 ```bash
-go install github.com/philipf/gt/cmd/gt@latest
+go install github.com/philipf/gt@latest
 ```
-## Next steps
-- Revisit the code structure for the domain layer. This doesn't feel like idiomatic Go yet
-    - breakdown?:
-        - calendar (bounded-context) / module  (ask chat-gpt what is difference between domain, bounded-context and module). have to be careful as module might clash with golang concepts
-            - model
-            - app_services
-            - domain_services
-            - repository
-        - infra??
 
-## Done  
-- Update existing tests to consistently use the asserts package
-- Fix error handling, using Error types
+Running `gt` for the first time will create a config file in the user's home directory.
+
+The config file is located at `~/.gt.yaml` and can be edited manually. (Future versions of the CLI will include a `gt config` command to edit the config file.)
