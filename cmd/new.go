@@ -135,7 +135,10 @@ func promptForActionUsingAi() error {
 
 	fmt.Println("Processing....")
 
-	llm, err := openai.NewChat(openai.WithModel(viper.GetString("ai.openAiModel")))
+	llm, err := openai.NewChat(
+		openai.WithModel(viper.GetString("ai.openAiModel")),
+		openai.WithToken(viper.GetString("ai.openAiKey")),
+	)
 
 	if err != nil {
 		log.Fatal(err)
@@ -163,12 +166,16 @@ func promptForActionUsingAi() error {
 
 	prompt := resultBuffer.String()
 
+	startTime := time.Now()
+
 	ctx := context.Background()
 	completion, err := llm.Call(ctx, []schema.ChatMessage{
 		schema.HumanChatMessage{Content: prompt}, // For some reason specifying a system message causes GPT-4 to ignore the FunctionCall??
 	}, llms.WithTemperature(temperature),
 		llms.WithFunctions(functions),
 	)
+
+	elapsedTime := time.Since(startTime)
 
 	if err != nil {
 		log.Fatal(err)
@@ -189,9 +196,11 @@ func promptForActionUsingAi() error {
 
 	// Print the action and summary to the console
 	fmt.Println("--------------------------------------------")
-	fmt.Println("Action: ", aiResponse["action"])
-	fmt.Println("Summary: ", aiResponse["summary"])
+	fmt.Println("Action  : ", aiResponse["action"])
+	fmt.Println("Summary : ", aiResponse["summary"])
+	fmt.Println("Due date: ", aiResponse["dueDate"])
 	fmt.Println("--------------------------------------------")
+	fmt.Printf("Operation took %.2f seconds\n", elapsedTime.Seconds())
 
 	// Ask the user if they want to add the action
 	fmt.Println("Do you want to add this action? [y]/n")

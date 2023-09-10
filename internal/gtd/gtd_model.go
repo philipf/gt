@@ -29,7 +29,7 @@ type Action struct {
 	ExternalLink string    // URL or link to external resources related to the action
 	CreatedAt    time.Time // Timestamp when the action was created
 	UpdatedAt    time.Time // Timestamp when the action was last updated
-	Due          time.Time // Due date and time for the action
+	DueDate      time.Time // Due date and time for the action
 	Status       string    // Current status of the action
 	Channel      string    // The medium or platform where the task was captured or will be performed
 	Priority     int       // Priority of the action; higher value indicates higher priority
