@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/philipf/gt/internal/files"
 )
 
 const (
@@ -86,7 +88,7 @@ func writeFile(path string, lines []string) error {
 // If withLink is true, the to-do item is formatted as a link.
 func InsertTodo(path, heading, todo string, withLink bool) error {
 	if withLink {
-		todo = fmt.Sprintf("[[%s]]", todo)
+		todo = fmt.Sprintf("[[%s]]", files.ToValidFilename(todo))
 	}
 
 	lines, err := readFile(path)

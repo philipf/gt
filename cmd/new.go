@@ -212,7 +212,7 @@ func promptForActionUsingAi() error {
 	shouldUse = strings.TrimSpace(strings.ToLower(shouldUse))
 
 	if shouldUse == "" || shouldUse == "y" {
-		return addAction(aiResponse["action"], aiResponse["summary"]+"\n\n### Original request\n"+input)
+		return addAction(aiResponse["action"], aiResponse["summary"]+"\n\n## Original request\n"+input)
 	} else {
 		return promptForAction()
 	}
