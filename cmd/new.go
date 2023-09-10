@@ -133,7 +133,7 @@ func promptForActionUsingAi() error {
 		return err
 	}
 
-	fmt.Println("Processing....")
+	fmt.Printf("Processing using [%s]....\n", viper.GetString("ai.openAiModel"))
 
 	llm, err := openai.NewChat(
 		openai.WithModel(viper.GetString("ai.openAiModel")),
@@ -212,7 +212,7 @@ func promptForActionUsingAi() error {
 	shouldUse = strings.TrimSpace(strings.ToLower(shouldUse))
 
 	if shouldUse == "" || shouldUse == "y" {
-		return addAction(aiResponse["action"], aiResponse["summary"])
+		return addAction(aiResponse["action"], aiResponse["summary"]+"\n\n ### Original request\n"+input)
 	} else {
 		return promptForAction()
 	}
