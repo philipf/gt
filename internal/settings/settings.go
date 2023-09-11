@@ -72,7 +72,7 @@ func initialiseConfigFile(gtHomePath string) error {
 	// write default in.md file
 	inTemplate := getDefaultInTemplate()
 
-	os.WriteFile(filepath.Join(gtHomePath, defaultInTemplate), []byte(inTemplate), 0644)
+	os.WriteFile(filepath.Join(gtHomePath, defaultInTemplate), []byte(inTemplate), 0600) // only owner can read/write
 
 	return nil
 }
@@ -111,6 +111,7 @@ func setViperDefaults() {
 	kanbanSettings := make(map[string]interface{})
 
 	kanbanSettings["basePath"] = "G:/My Drive/SecondBrain"
+	kanbanSettings["gtdPath"] = "_GTD"
 	kanbanSettings["inboxPath"] = "_GTD"
 	kanbanSettings["boardPath"] = "_GTD/_Board.md"
 	kanbanSettings["inTemplate"] = defaultInTemplate

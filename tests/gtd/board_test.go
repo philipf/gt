@@ -1,4 +1,4 @@
-package gtd
+package gtd_td_test
 
 import (
 	"os"

@@ -5,35 +5,126 @@ package cmd
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+	"strings"
 
+	"github.com/philipf/gt/internal/console"
+	"github.com/philipf/gt/internal/settings"
 	"github.com/spf13/cobra"
 )
+
+var dryRun bool = false
 
 // purgeCmd represents the purge command
 var purgeCmd = &cobra.Command{
 	Use:   "purge",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Purge archived actions",
+	Long:  `All files in the Kanban directory with the status set to Archive in the Front Matter will be deleted.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("purge called")
+		purge()
 	},
 }
 
 func init() {
 	gtdCmd.AddCommand(purgeCmd)
 
-	// Here you will define your flags and configuration settings.
+	purgeCmd.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "Dry run")
+}
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// purgeCmd.PersistentFlags().String("foo", "", "A help for foo")
+func purge() {
+	// Define the directory to search in
+	directory := settings.GetKanbanGtdPath()
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// purgeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	if directory == "" {
+		fmt.Println("The GTD directory is not set in the config file")
+		return
+	}
+
+	// Check if the directory exists
+	if _, err := os.Stat(directory); os.IsNotExist(err) {
+		fmt.Printf("The GTD directory [%s] does not exist\n", directory)
+		return
+	}
+
+	// Define the search pattern for files
+	filePattern := "*.md"
+
+	// Define the content pattern to search for
+	// TODO: Move to config file
+	contentPattern := "status: Archive"
+
+	// Declare a slice to store the results
+	var filesToBeDeleted []string
+
+	// Walk through the directory and its subdirectories
+	err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Check if the file matches the pattern
+		if matched, _ := filepath.Match(filePattern, filepath.Base(path)); matched {
+			// Read the file content
+			fileContent, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+
+			// Check if the content matches the pattern
+			if strings.Contains(string(fileContent), contentPattern) {
+				filesToBeDeleted = append(filesToBeDeleted, path)
+				fmt.Println(path)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	fileCount := len(filesToBeDeleted)
+
+	if fileCount == 0 {
+		fmt.Println("No files found")
+		return
+	}
+
+	// Prompt the user to confirm the deletion of the files
+	fmt.Printf("Do you want to delete the %v file(s) in [%s]? (y/[n]): ", len(filesToBeDeleted), directory)
+	confirmation, err := console.ReadSingleLineInput()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	confirmation = strings.ToLower(strings.TrimSpace(confirmation))
+
+	if confirmation != "y" {
+		fmt.Println("Files not deleted, user cancelled")
+		return
+	}
+
+	for _, file := range filesToBeDeleted {
+		if dryRun {
+			break
+		}
+
+		err := os.Remove(file)
+		if err != nil {
+			fmt.Printf("Error deleting file %s: %s\n", file, err)
+		}
+	}
+
+	if dryRun {
+		fmt.Println("Dry run, files not deleted")
+		return
+	}
+
+	fmt.Println("Files deleted")
+
+	//TODO remove files from archive list
 }
