@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/philipf/gt/internal/console"
@@ -34,32 +35,35 @@ func init() {
 }
 
 func purge() {
-	// Define the directory to search in
-	directory := settings.GetKanbanGtdPath()
+	searchDir := settings.GetKanbanGtdPath()
 
-	if directory == "" {
+	if searchDir == "" {
 		fmt.Println("The GTD directory is not set in the config file")
 		return
 	}
 
 	// Check if the directory exists
-	if _, err := os.Stat(directory); os.IsNotExist(err) {
-		fmt.Printf("The GTD directory [%s] does not exist\n", directory)
+	if _, err := os.Stat(searchDir); os.IsNotExist(err) {
+		fmt.Printf("The GTD directory [%s] does not exist\n", searchDir)
 		return
 	}
 
 	// Define the search pattern for files
 	filePattern := "*.md"
 
-	// Define the content pattern to search for
-	// TODO: Move to config file
-	contentPattern := "status: Archive"
+	// Define the content pattern to search for using regex
+	contentPatternRegex := `^---\n(?:[^\n]*\n)*?status:\s*Archive`
+
+	re, err := regexp.Compile(contentPatternRegex)
+	if err != nil {
+		log.Fatalf("Failed to compile regex: %v", err)
+	}
 
 	// Declare a slice to store the results
 	var filesToBeDeleted []string
 
 	// Walk through the directory and its subdirectories
-	err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(searchDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -73,7 +77,7 @@ func purge() {
 			}
 
 			// Check if the content matches the pattern
-			if strings.Contains(string(fileContent), contentPattern) {
+			if re.Match(fileContent) {
 				filesToBeDeleted = append(filesToBeDeleted, path)
 				fmt.Println(path)
 			}
@@ -94,7 +98,7 @@ func purge() {
 	}
 
 	// Prompt the user to confirm the deletion of the files
-	fmt.Printf("Do you want to delete the %v file(s) in [%s]? (y/[n]): ", len(filesToBeDeleted), directory)
+	fmt.Printf("Do you want to delete the %v file(s) in [%s]? (y/N): ", len(filesToBeDeleted), searchDir)
 	confirmation, err := console.ReadSingleLineInput()
 
 	if err != nil {
@@ -123,8 +127,6 @@ func purge() {
 		fmt.Println("Dry run, files not deleted")
 		return
 	}
-
 	fmt.Println("Files deleted")
 
-	//TODO remove files from archive list
 }
