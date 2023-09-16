@@ -5,6 +5,9 @@ import (
 	"os"
 
 	"github.com/philipf/gt/cmd"
+
+	_ "github.com/philipf/gt/cmd/cal"
+	_ "github.com/philipf/gt/cmd/gtd"
 )
 
 func main() {

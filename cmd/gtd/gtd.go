@@ -1,6 +1,7 @@
-package cmd
+package gtd
 
 import (
+	"github.com/philipf/gt/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +22,7 @@ Multi line input is supported for the description. To end the description, enter
 }
 
 func init() {
-	rootCmd.AddCommand(gtdCmd)
+	cmd.RootCmd.AddCommand(gtdCmd)
 
 	gtdCmd.PersistentFlags().BoolVarP(&UseAi, "ai", "", false, "Use AI to assist with the creation of a new action")
 }

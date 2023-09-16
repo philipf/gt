@@ -1,8 +1,9 @@
-package cmd
+package cal
 
 import (
 	"fmt"
 
+	"github.com/philipf/gt/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +23,7 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
-	rootCmd.AddCommand(freeCmd)
+	cmd.RootCmd.AddCommand(freeCmd)
 
 	// Here you will define your flags and configuration settings.
 

@@ -27,5 +27,5 @@ var settingsCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(settingsCmd)
+	RootCmd.AddCommand(settingsCmd)
 }
