@@ -128,5 +128,4 @@ func purge() {
 		return
 	}
 	fmt.Println("Files deleted")
-
 }

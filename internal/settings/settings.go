@@ -132,7 +132,7 @@ func setViperDefaults() {
 	gtdSettings["actionPrompt.user"] = `I am {{.name}} {{.surname}} and work for {{.company}}, you are an efficient task master using the Getting Things Done method, your job is to extract the next action for me and to provide a summary from supplied emails or online conversations. 
 It is now {{.currentDate}}, use: 
 {{.input}}`
-	gtdSettings["agctionPrompt.temperature"] = 0.7
+	gtdSettings["actionPrompt.temperature"] = 0.7
 
 	viper.SetDefault("gtd", gtdSettings)
 
