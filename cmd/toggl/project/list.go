@@ -2,7 +2,6 @@ package project
 
 import (
 	"fmt"
-	"regexp"
 
 	"github.com/philipf/gt/internal/togglservices"
 	"github.com/spf13/cobra"
@@ -34,14 +33,11 @@ gt toggl project list
 			return
 		}
 
-		re := regexp.MustCompile(`^\[([^|]+)\|([P|S])\|(\d+)(\|(T\d{8}\.\d+))?\] (.+)$`)
-
-		invalidProjects := make([]togglservices.ToggleProjectElement, 0)
+		invalidProjects := make(togglservices.TogglProjects, 0)
 
 		for _, i := range items {
 			// only print the projects that don't match the naming convention
-			if !re.MatchString(i.Name) {
-				//fmt.Printf("%d - %s\n", i.ID, i.Name)
+			if !togglservices.ValidProjectName(i.Name) {
 				invalidProjects = append(invalidProjects, i)
 			}
 		}
@@ -65,5 +61,4 @@ func init() {
 
 	// filter
 	listCmd.Flags().Bool("validate", false, "Validate projects matches the naming convention")
-
 }

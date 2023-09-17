@@ -12,8 +12,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-func GetClients(filter string) (ToggleClients, error) {
-	uri := fmt.Sprintf("%s/workspaces/%s/clients", BASE_URI, getWorkspaceId())
+func GetClients(filter string) (TogglClients, error) {
+	uri := fmt.Sprintf("%s/workspaces/%s/clients", BASE_URI, getWorkspaceID())
 
 	u, err := url.Parse(uri)
 	if err != nil {
@@ -49,36 +49,19 @@ func GetClients(filter string) (ToggleClients, error) {
 		return nil, err
 	}
 
-	clients, err := UnmarshalToggleClient(body)
+	clients, err := unmarshalTogglClient(body)
 
 	if err != nil {
 		return nil, err
 	}
 
-	sort.Sort(ByName(clients))
+	sort.Sort(ClientsByName(clients))
 
 	return clients, nil
 }
 
-type ToggleClients []ToggleClientElement
-
-func UnmarshalToggleClient(data []byte) (ToggleClients, error) {
-	var r ToggleClients
+func unmarshalTogglClient(data []byte) (TogglClients, error) {
+	var r TogglClients
 	err := json.Unmarshal(data, &r)
 	return r, err
 }
-
-type ToggleClientElement struct {
-	ID       int64  `json:"id"`
-	Wid      int64  `json:"wid"`
-	Archived bool   `json:"archived"`
-	Name     string `json:"name"`
-	At       string `json:"at"`
-}
-
-// ByName implements sort.Interface based on the Name field of ToggleClientElement.
-type ByName ToggleClients
-
-func (a ByName) Len() int           { return len(a) }
-func (a ByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByName) Less(i, j int) bool { return a[i].Name < a[j].Name }

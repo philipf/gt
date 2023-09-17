@@ -10,7 +10,7 @@ import (
 
 func initDay() Day {
 	d := Day{
-		Id:    uuid.New(),
+		ID:    uuid.New(),
 		Date:  time.Date(2023, 8, 20, 0, 0, 0, 0, time.UTC),
 		Start: time.Date(2023, 8, 20, 9, 0, 0, 0, time.UTC),
 		End:   time.Date(2023, 8, 20, 17, 0, 0, 0, time.UTC),
@@ -21,7 +21,7 @@ func initDay() Day {
 func TestShouldAllowFullSegment(t *testing.T) {
 	d := initDay()
 	s1 := Segment{
-		Id:          uuid.New(),
+		ID:          uuid.New(),
 		Description: "S1",
 		Start:       time.Date(2023, 8, 20, 9, 0, 0, 0, time.UTC),
 		End:         time.Date(2023, 8, 20, 17, 0, 0, 0, time.UTC),
@@ -33,7 +33,7 @@ func TestShouldAllowMultipleSegments(t *testing.T) {
 	d := initDay()
 
 	err := d.AddSegment(Segment{
-		Id:          uuid.New(),
+		ID:          uuid.New(),
 		Description: "S1",
 		Start:       time.Date(2023, 8, 20, 9, 0, 0, 0, time.UTC),
 		End:         time.Date(2023, 8, 20, 10, 0, 0, 0, time.UTC),
@@ -41,7 +41,7 @@ func TestShouldAllowMultipleSegments(t *testing.T) {
 	assert.NoError(t, err, "Error adding segment S1")
 
 	err = d.AddSegment(Segment{
-		Id:          uuid.New(),
+		ID:          uuid.New(),
 		Description: "S2",
 		Start:       time.Date(2023, 8, 20, 11, 0, 0, 0, time.UTC),
 		End:         time.Date(2023, 8, 20, 12, 0, 0, 0, time.UTC),
@@ -55,7 +55,7 @@ func TestShouldFailSegmentExceedsEndTime(t *testing.T) {
 	d := initDay()
 
 	s1 := Segment{
-		Id:          uuid.New(),
+		ID:          uuid.New(),
 		Description: "S1",
 		Start:       time.Date(2023, 8, 20, 9, 0, 0, 0, time.UTC),
 		End:         time.Date(2023, 8, 20, 17, 1, 0, 0, time.UTC),
@@ -71,7 +71,7 @@ func TestShouldFailSegmentExceedsStartTime(t *testing.T) {
 	d := initDay()
 
 	s1 := Segment{
-		Id:          uuid.New(),
+		ID:          uuid.New(),
 		Description: "S1",
 		Start:       time.Date(2023, 8, 20, 8, 59, 0, 0, time.UTC),
 		End:         time.Date(2023, 8, 20, 17, 0, 0, 0, time.UTC),
@@ -86,7 +86,7 @@ func TestShouldFailSegmentEndTimeBeforeStart(t *testing.T) {
 	d := initDay()
 
 	s1 := Segment{
-		Id:          uuid.New(),
+		ID:          uuid.New(),
 		Description: "S1",
 		Start:       time.Date(2023, 8, 20, 11, 00, 0, 0, time.UTC),
 		End:         time.Date(2023, 8, 20, 10, 0, 0, 0, time.UTC),
@@ -107,7 +107,7 @@ func TestClearSegments(t *testing.T) {
 	d := initDay()
 
 	s1 := Segment{
-		Id:          uuid.New(),
+		ID:          uuid.New(),
 		Description: "S1",
 		Start:       time.Date(2023, 8, 20, 9, 0, 0, 0, time.UTC),
 		End:         time.Date(2023, 8, 20, 17, 0, 0, 0, time.UTC),

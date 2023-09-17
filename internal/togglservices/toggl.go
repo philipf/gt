@@ -10,7 +10,7 @@ const (
 	BASE_URI = "https://api.track.toggl.com/api/v9"
 )
 
-func getWorkspaceId() string {
+func getWorkspaceID() string {
 	r := viper.GetString("toggl.workspace")
 
 	if r == "" {

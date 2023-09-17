@@ -22,7 +22,7 @@ const (
 //
 // TODO: Updating the start or end time of a day may invalidate existing segments.
 type Day struct {
-	Id uuid.UUID
+	ID uuid.UUID
 
 	// Date specifies the calendar date for the work day, excluding the time details.
 	Date time.Time
@@ -81,7 +81,7 @@ func (d *Day) ClearSegments() {
 // RemoveSegment removes a segment from the day.
 func (d *Day) RemoveSegment(s Segment) {
 	for i, seg := range d.Segments {
-		if seg.Id == s.Id {
+		if seg.ID == s.ID {
 			d.Segments = append(d.Segments[:i], d.Segments[i+1:]...)
 			break
 		}
@@ -96,7 +96,7 @@ func (d *Day) UpdateSegment(s Segment) error {
 	}
 
 	for i, seg := range d.Segments {
-		if seg.Id == s.Id {
+		if seg.ID == s.ID {
 			d.Segments[i] = s
 			break
 		}
@@ -129,7 +129,7 @@ func validateSegment(d *Day, s *Segment) error {
 
 // Segment defines a time interval within a day, representing either working or non-working hours.
 type Segment struct {
-	Id uuid.UUID
+	ID uuid.UUID
 
 	// Description offers more details about the segment's nature.
 	Description string
@@ -147,7 +147,7 @@ type Segment struct {
 // factory method for creating a new segment
 func NewSegment(description string, start time.Time, end time.Time, isWorkingTime bool) Segment {
 	return Segment{
-		Id:            uuid.New(),
+		ID:            uuid.New(),
 		Description:   description,
 		Start:         start,
 		End:           end,

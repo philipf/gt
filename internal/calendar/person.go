@@ -8,12 +8,12 @@ import (
 )
 
 type Person struct {
-	Id    uuid.UUID
+	ID    uuid.UUID
 	Name  string
 	Email string
 
 	// This is the ID of the person in the external system (e.g. Google, Azure AD).
-	ExternalIds []ExternalId
+	ExternalIDs []ExternalID
 
 	// This is a flag to indicate if this is the person who is currently logged in.
 	IsSignedOnUser bool
@@ -22,8 +22,8 @@ type Person struct {
 	Days []Day
 }
 
-type ExternalId struct {
-	Id   string
+type ExternalID struct {
+	ID   string
 	Type string
 }
 
@@ -46,7 +46,7 @@ func (p *Person) AddDay(date time.Time) (*Day, error) {
 
 	// Create a new day.
 	day := &Day{
-		Id:   uuid.New(),
+		ID:   uuid.New(),
 		Date: date,
 
 		// TODO: remove defaults

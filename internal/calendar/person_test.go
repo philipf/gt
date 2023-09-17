@@ -10,7 +10,7 @@ import (
 
 func TestNewDayShouldAllowNewItem(t *testing.T) {
 	p := Person{
-		Id:    uuid.New(),
+		ID:    uuid.New(),
 		Name:  "Test Person",
 		Email: "test@test.com",
 	}
@@ -20,7 +20,7 @@ func TestNewDayShouldAllowNewItem(t *testing.T) {
 
 	assert.NoError(t, error, "Error adding day")
 	assert.NotNil(t, d, "Day should not be nil")
-	assert.NotEqual(t, uuid.Nil, d.Id, "Day should have an ID")
+	assert.NotEqual(t, uuid.Nil, d.ID, "Day should have an ID")
 	assert.Equal(t, t1, d.Date, "Day should have the correct date")
 	assert.Equal(t, time.Date(2023, 8, 20, 9, 0, 0, 0, time.UTC), d.Start, "Day should have the correct start time")
 	assert.Equal(t, time.Date(2023, 8, 20, 17, 0, 0, 0, time.UTC), d.End, "Day should have the correct end time")
@@ -29,7 +29,7 @@ func TestNewDayShouldAllowNewItem(t *testing.T) {
 
 func TestNewDayShouldNotAllowDuplicateItem(t *testing.T) {
 	p := Person{
-		Id:    uuid.New(),
+		ID:    uuid.New(),
 		Name:  "Test Person",
 		Email: "test@test.com",
 	}
@@ -53,7 +53,7 @@ func TestNewDayShouldNotAllowDuplicateItem(t *testing.T) {
 
 func TestNewDayShouldSortItems(t *testing.T) {
 	p := Person{
-		Id:    uuid.New(),
+		ID:    uuid.New(),
 		Name:  "Test Person",
 		Email: "test@test.com",
 	}

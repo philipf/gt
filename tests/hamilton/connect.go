@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	tenantdId = "1234567890"
-	clientId  = "1234567890"
+	tenantdID = "1234567890"
+	clientID  = "1234567890"
 
 // clientSecret = "1234567890"
 )
@@ -24,8 +24,8 @@ func main() {
 
 	credentials := auth.Credentials{
 		Environment: *env,
-		TenantID:    tenantdId,
-		ClientID:    clientId,
+		TenantID:    tenantdID,
+		ClientID:    clientID,
 		//ClientSecret: clientSecret,
 		EnableAuthenticatingUsingAzureCLI: true,
 	}

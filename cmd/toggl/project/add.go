@@ -15,9 +15,9 @@ var addCmd = &cobra.Command{
 	Short: "Add a new project",
 	Long: `Adds a project using a specific naming convention and client association
 Example:
-gt toggle project add --name "Project Name" --clientId 12345
+gt toggl project add --name "Project Name" --clientID 12345
 
-To obtain the clientId, run the following command:
+To obtain the clientID, run the following command:
 gt toggl client list
 `,
 
@@ -54,13 +54,13 @@ func doInteractive(cmd *cobra.Command) {
 	clients, err := togglservices.GetClients(clientFilter)
 	cobra.CheckErr(err)
 
-	var clientId int64 = 0
+	var clientID int64 = 0
 
 	if len(clients) == 0 {
 		fmt.Println("No clients found for: " + clientFilter)
 		return
 	} else if len(clients) == 1 {
-		clientId = clients[0].ID
+		clientID = clients[0].ID
 	} else {
 		// More than one found, ask the user to select one
 		fmt.Println("More than one client found, please select one:")
@@ -68,14 +68,14 @@ func doInteractive(cmd *cobra.Command) {
 			fmt.Printf("\t%d - %s\n", i.ID, i.Name)
 		}
 
-		clientId, err = console.PromptInt64("Client Id: ")
+		clientID, err = console.PromptInt64("Client ID: ")
 		cobra.CheckErr(err)
 	}
 
 	// get client name from clients list by id
 	clientName := ""
 	for _, i := range clients {
-		if i.ID == clientId {
+		if i.ID == clientID {
 			clientName = i.Name
 			break
 		}
@@ -96,7 +96,7 @@ func doInteractive(cmd *cobra.Command) {
 	}
 
 	// obtain the auto task id from the user
-	taskId, err := console.PromptInt64("Auto Task Id: ")
+	taskID, err := console.PromptInt64("Auto Task ID: ")
 	cobra.CheckErr(err)
 
 	// obtain the project name from the user
@@ -104,9 +104,9 @@ func doInteractive(cmd *cobra.Command) {
 	cobra.CheckErr(err)
 
 	if projectType == "S" {
-		projectName = fmt.Sprintf("[%s|%d|%s] %s", clientName, taskId, ticketNo, projectName)
+		projectName = fmt.Sprintf("[%s|%d|%s] %s", clientName, taskID, ticketNo, projectName)
 	} else {
-		projectName = fmt.Sprintf("[%s|%d] %s", clientName, taskId, projectName)
+		projectName = fmt.Sprintf("[%s|%d] %s", clientName, taskID, projectName)
 	}
 
 	// get confirmation from the user
@@ -115,7 +115,7 @@ func doInteractive(cmd *cobra.Command) {
 
 	confirm = strings.ToUpper(confirm)
 	if confirm == "Y" {
-		err = togglservices.CreateProject(projectName, clientId)
+		err = togglservices.CreateProject(projectName, clientID)
 		cobra.CheckErr(err)
 		fmt.Println("Project created successfully")
 	} else {
@@ -125,10 +125,10 @@ func doInteractive(cmd *cobra.Command) {
 
 func addProject(cmd *cobra.Command) {
 	name, _ := cmd.Flags().GetString("name")
-	clientId, _ := cmd.Flags().GetInt64("clientId")
+	clientID, _ := cmd.Flags().GetInt64("clientID")
 
-	if clientId <= 0 {
-		fmt.Println("clientId is required")
+	if clientID <= 0 {
+		fmt.Println("clientID is required")
 		return
 	}
 
@@ -137,7 +137,7 @@ func addProject(cmd *cobra.Command) {
 		return
 	}
 
-	err := togglservices.CreateProject(name, clientId)
+	err := togglservices.CreateProject(name, clientID)
 	cobra.CheckErr(err)
 }
 
@@ -145,8 +145,7 @@ func init() {
 	projectsCmd.AddCommand(addCmd)
 
 	addCmd.Flags().StringP("name", "n", "", "Name of the project")
-	addCmd.Flags().Int64P("clientId", "c", 0, "ClientId that the project belongs to")
+	addCmd.Flags().Int64P("clientID", "c", 0, "ClientID that the project belongs to")
 	addCmd.Flags().StringP("clientName", "f", "", "Client filter by name")
 	addCmd.Flags().BoolP("interactive", "i", false, "Interactive mode")
-
 }

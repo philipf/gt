@@ -8,8 +8,8 @@ import (
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:   "cmd",
-	Short: "gt - Go Time by Philip Fourie",
-	Long:  `gt - Got Time, provides utilties for enhancing daily tasks`,
+	Short: "gt - Go Time",
+	Long:  `gt - Go Time, provides utilties for enhancing daily tasks`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -20,7 +20,6 @@ func Execute() error {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 func initConfig() {

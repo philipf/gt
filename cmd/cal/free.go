@@ -31,7 +31,4 @@ func init() {
 	// and all subcommands, e.g.:
 	// freeCmd.PersistentFlags().String("foo", "", "A help for foo")
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// freeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

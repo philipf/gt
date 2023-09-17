@@ -18,13 +18,13 @@ type Task struct {
 }
 
 func CreateTask(
-	externalId, title, description, externalLink string,
+	externalID, title, description, externalLink string,
 	createdAt, modifiedAt time.Time,
 ) (*Task, error) {
 
 	return &Task{
 		ID:           uuid.New(),
-		ExternalID:   externalId,
+		ExternalID:   externalID,
 		Title:        title,
 		Description:  description,
 		ExternalLink: externalLink,

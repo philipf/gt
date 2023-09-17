@@ -11,7 +11,7 @@ import (
 
 func buildDummyDay() Day {
 	d := Day{
-		Id:    uuid.New(),
+		ID:    uuid.New(),
 		Date:  time.Date(2023, 8, 20, 0, 0, 0, 0, time.UTC),
 		Start: time.Date(2023, 8, 20, 9, 0, 0, 0, time.UTC),
 		End:   time.Date(2023, 8, 20, 17, 0, 0, 0, time.UTC),
@@ -24,7 +24,7 @@ func buildDummyDay() Day {
 		endHour := startHour + 1
 
 		d.AddSegment(Segment{
-			Id:          uuid.New(),
+			ID:          uuid.New(),
 			Description: fmt.Sprintf("S%d", i),
 			Start:       time.Date(2023, 8, 20, startHour, startMin, 0, 0, time.UTC),
 			End:         time.Date(2023, 8, 20, endHour, startMin, 0, 0, time.UTC),
