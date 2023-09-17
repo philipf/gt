@@ -22,9 +22,11 @@ func FetchTimeEntries(startDateTime, endDateTime time.Time) (TogglTimeEntries, e
 
 	// Add parameters
 	q := req.URL.Query()
-	q.Add("start_date", startDateTime.Format("2006-01-02"))
-	q.Add("end_date", endDateTime.Format("2006-01-02"))
+	q.Add("start_date", startDateTime.Format(time.RFC3339))
+	q.Add("end_date", endDateTime.Format(time.RFC3339))
 	req.URL.RawQuery = q.Encode()
+
+	//fmt.Println(req.URL.RawQuery)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -36,7 +38,7 @@ func FetchTimeEntries(startDateTime, endDateTime time.Time) (TogglTimeEntries, e
 		return nil, fmt.Errorf("invalid status: %s", resp.Status)
 	}
 
-	var timeEntries []TogglTimeEntry
+	var timeEntries TogglTimeEntries
 	decoder := json.NewDecoder(resp.Body)
 	err = decoder.Decode(&timeEntries)
 	if err != nil {
@@ -47,11 +49,11 @@ func FetchTimeEntries(startDateTime, endDateTime time.Time) (TogglTimeEntries, e
 	var filteredEntries TogglTimeEntries
 	for _, entry := range timeEntries {
 		if entry.ServerDeletedAt == nil {
-			filteredEntries = append(filteredEntries, &entry)
+			filteredEntries = append(filteredEntries, entry)
 		}
 	}
 
-	return filteredEntries, nil
+	return timeEntries, nil
 }
 
 func includeProjectAndClient(timeEntries TogglTimeEntries) error {
