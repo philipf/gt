@@ -13,7 +13,7 @@ import (
 )
 
 func GetClients(filter string) (TogglClients, error) {
-	uri := fmt.Sprintf("%s/workspaces/%s/clients", BASE_URI, getWorkspaceID())
+	uri := fmt.Sprintf("%s/api/v9/workspaces/%s/clients", BASE_URI, getWorkspaceID())
 
 	u, err := url.Parse(uri)
 	if err != nil {

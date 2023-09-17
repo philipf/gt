@@ -2,6 +2,7 @@ package togglservices
 
 import "regexp"
 
+// var ProjectTileRegEx = regexp.MustCompile(`^\[([^|]+)\|([P|S])\|(\d+)(\|(T\d{8}\.\d+))?\] (.+)$`)
 var ProjectTileRegEx = regexp.MustCompile(`^\[([^|]+)\|([P|S])\|(\d+)(\|(T\d{8}\.\d+))?\] (.+)$`)
 
 type CreateProjectRequest struct {
@@ -17,9 +18,11 @@ type GetProjectsOpts struct {
 }
 
 type ProjectTitle struct {
-	Project string
-	IsTask  bool
-	TaskID  int
+	Client   string
+	Project  string
+	IsTask   bool
+	TaskID   int
+	TicketID string
 }
 type TogglProjects []*TogglProjectElement
 

@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	BASE_URI = "https://api.track.toggl.com/api/v9"
+	BASE_URI = "https://api.track.toggl.com"
 )
 
 func getWorkspaceID() string {

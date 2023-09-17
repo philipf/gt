@@ -29,7 +29,7 @@ func CreateProject(projectName string, clientID int64) error {
 		return err
 	}
 
-	uri := fmt.Sprintf("%s/workspaces/%s/projects", BASE_URI, getWorkspaceID())
+	uri := fmt.Sprintf("%s/api/v9/workspaces/%s/projects", BASE_URI, getWorkspaceID())
 	log.Println("URI:", uri)
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
 	if err != nil {
@@ -57,7 +57,7 @@ func CreateProject(projectName string, clientID int64) error {
 }
 
 func GetProjects(filter *GetProjectsOpts) (TogglProjects, error) {
-	uri := fmt.Sprintf("%s/workspaces/%s/projects", BASE_URI, getWorkspaceID())
+	uri := fmt.Sprintf("%s/api/v9/workspaces/%s/projects", BASE_URI, getWorkspaceID())
 
 	u, err := url.Parse(uri)
 	if err != nil {
@@ -124,19 +124,22 @@ func ParseProjectTitle(project string) (ProjectTitle, error) {
 	}
 
 	matches := ProjectTileRegEx.FindStringSubmatch(project)
+
 	if matches == nil {
-		return ProjectTitle{}, errors.New("invalid project title format: " + project)
+		return ProjectTitle{}, errors.New("project does not match the naming convention")
 	}
 
-	taskID, err := strconv.Atoi(matches[ProjectTileRegEx.SubexpIndex("TaskID")])
+	taskID, err := strconv.Atoi(matches[3])
 	if err != nil {
-		return ProjectTitle{}, err
+		return ProjectTitle{}, fmt.Errorf("failed to convert TaskID to integer: %v", err)
 	}
 
 	return ProjectTitle{
-		Project: matches[ProjectTileRegEx.SubexpIndex("Description")],
-		IsTask:  matches[ProjectTileRegEx.SubexpIndex("Type")] == "S",
-		TaskID:  taskID,
+		Client:   matches[1],
+		IsTask:   (matches[2] == "S"),
+		TaskID:   taskID,
+		TicketID: matches[5], // Note: [4] would be the entire optional group including the pipe
+		Project:  matches[6],
 	}, nil
 }
 
