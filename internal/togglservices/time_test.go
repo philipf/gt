@@ -5,9 +5,19 @@ import (
 	"sort"
 	"testing"
 	"time"
+
+	"github.com/philipf/gt/internal/settings"
+	"github.com/spf13/viper"
 )
 
 func TestFetchTimeEntries(t *testing.T) {
+	err := settings.Init()
+
+	fmt.Println("key:" + viper.GetString("toggl.apikey"))
+
+	if err != nil {
+		t.Errorf("expected  no error but got %v", err)
+	}
 
 	sd := time.Date(2023, 9, 14, 0, 0, 0, 0, time.Local)
 	ed := sd.AddDate(0, 0, 1)
