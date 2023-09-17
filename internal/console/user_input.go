@@ -2,11 +2,40 @@ package console
 
 import (
 	"bufio"
+	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
-func ReadSingleLineInput() (string, error) {
+func Prompt(prompt string) (string, error) {
+	fmt.Print(prompt)
+	return ReadLine()
+}
+
+func PromptInt64(prompt string) (int64, error) {
+	fmt.Print(prompt)
+	l, err := ReadLine()
+	if err != nil {
+		return 0, err
+	}
+
+	// convert string to int64
+	var i int64
+	i, err = strconv.ParseInt(l, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return i, nil
+}
+
+func PromptMultiLine(prompt string) ([]string, error) {
+	fmt.Print(prompt)
+	return ReadMultiLine()
+}
+
+func ReadLine() (string, error) {
 	scanner := bufio.NewScanner(os.Stdin)
 	if scanner.Scan() {
 		input := strings.TrimSpace(scanner.Text())
@@ -22,8 +51,7 @@ func ReadSingleLineInput() (string, error) {
 }
 
 // Multi line logic allows the user to enter multiple lines of text and ends when the users enters a full stop on a new line
-func ReadMultiLineInput() ([]string, error) {
-
+func ReadMultiLine() ([]string, error) {
 	scanner := bufio.NewScanner(os.Stdin)
 	var lines []string
 	for scanner.Scan() {

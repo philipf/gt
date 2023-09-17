@@ -17,7 +17,7 @@ Multi line input is supported for the description. To end the description, enter
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		newCmd.Run(cmd, args)
+		addCmd.Run(cmd, args)
 	},
 }
 

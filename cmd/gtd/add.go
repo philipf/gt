@@ -22,16 +22,11 @@ import (
 	"github.com/tmc/langchaingo/schema"
 )
 
-// newCmd represents the new command
-var newCmd = &cobra.Command{
-	Use:   "new",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+// addCmd represents the new command
+var addCmd = &cobra.Command{
+	Use:   "add",
+	Short: "Add a new action to the inbox",
+	Long:  `Adds a new action and adds it to the Kanban board. If a description is provided, it will be added to the action as a note.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 
@@ -45,7 +40,7 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
-	gtdCmd.AddCommand(newCmd)
+	gtdCmd.AddCommand(addCmd)
 
 	// Here you will define your flags and configuration settings.
 
@@ -112,9 +107,9 @@ func getUserInput(prompt string, allowMultiLine bool) (string, error) {
 	fmt.Println(prompt)
 
 	if !allowMultiLine {
-		return console.ReadSingleLineInput()
+		return console.ReadLine()
 	} else {
-		lines, err := console.ReadMultiLineInput()
+		lines, err := console.ReadMultiLine()
 		if err != nil {
 			return "", err
 		}
@@ -201,7 +196,7 @@ func promptForActionUsingAi() error {
 
 	// Ask the user if they want to add the action
 	fmt.Println("Do you want to add this action? [y]/n")
-	shouldUse, err := console.ReadSingleLineInput()
+	shouldUse, err := console.ReadLine()
 	if err != nil {
 		return err
 	}

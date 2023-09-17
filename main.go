@@ -8,6 +8,9 @@ import (
 
 	_ "github.com/philipf/gt/cmd/cal"
 	_ "github.com/philipf/gt/cmd/gtd"
+	_ "github.com/philipf/gt/cmd/toggl"
+	_ "github.com/philipf/gt/cmd/toggl/client"
+	_ "github.com/philipf/gt/cmd/toggl/project"
 )
 
 func main() {

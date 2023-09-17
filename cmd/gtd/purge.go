@@ -96,7 +96,7 @@ func purge() {
 
 	// Prompt the user to confirm the deletion of the files
 	fmt.Printf("Do you want to delete the %v file(s) in [%s]? (y/N): ", len(filesToBeDeleted), searchDir)
-	confirmation, err := console.ReadSingleLineInput()
+	confirmation, err := console.ReadLine()
 
 	if err != nil {
 		log.Fatal(err)
