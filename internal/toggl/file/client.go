@@ -1,5 +1,5 @@
 // Implements the ClientGateway by reading from a file
-package gateways
+package file
 
 import (
 	"encoding/json"
@@ -7,19 +7,15 @@ import (
 	"path"
 
 	"github.com/philipf/gt/internal/settings"
-	"github.com/philipf/gt/internal/togglservices"
+	"github.com/philipf/gt/internal/toggl"
 )
 
 type FileClientGateway struct {
 }
 
-func NewFileClientGateway() ClientGateway {
-	return &FileClientGateway{}
-}
+const filename = "toggl-clients.json"
 
-const filename = "toggle-clients.config"
-
-func (f *FileClientGateway) GetClients(filter string) (togglservices.TogglClients, error) {
+func (f *FileClientGateway) GetClients(filter string) (toggl.TogglClients, error) {
 	d, err := settings.GetGtConfigPath()
 	if err != nil {
 		return nil, err
@@ -35,7 +31,7 @@ func (f *FileClientGateway) GetClients(filter string) (togglservices.TogglClient
 
 	if os.IsNotExist(err) {
 		// If the file does not exist, return an empty list
-		return togglservices.TogglClients{}, nil
+		return toggl.TogglClients{}, nil
 	}
 
 	// Read the contents of the file
@@ -45,7 +41,7 @@ func (f *FileClientGateway) GetClients(filter string) (togglservices.TogglClient
 	}
 
 	// Unmarshal the JSON data into a TogglClients slice
-	var clients togglservices.TogglClients
+	var clients toggl.TogglClients
 	err = json.Unmarshal(fileContent, &clients)
 	if err != nil {
 		return nil, err

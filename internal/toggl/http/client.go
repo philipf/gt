@@ -1,4 +1,4 @@
-package gateways
+package http
 
 import (
 	"encoding/json"
@@ -8,19 +8,15 @@ import (
 	"net/url"
 	"sort"
 
-	"github.com/philipf/gt/internal/togglservices"
+	"github.com/philipf/gt/internal/toggl"
 	"github.com/spf13/viper"
 )
 
-type ToggleClientGateway struct {
+type TogglClientGateway struct {
 }
 
-func NewToggleClientGateway() ClientGateway {
-	return &ToggleClientGateway{}
-}
-
-func (t *ToggleClientGateway) GetClients(filter string) (togglservices.TogglClients, error) {
-	uri, err := getApiClientsList()
+func (t *TogglClientGateway) GetClients(filter string) (toggl.TogglClients, error) {
+	uri, err := getApiClientsListUri()
 	if err != nil {
 		return nil, err
 	}
@@ -59,14 +55,14 @@ func (t *ToggleClientGateway) GetClients(filter string) (togglservices.TogglClie
 		return nil, err
 	}
 
-	var r togglservices.TogglClients
+	var r toggl.TogglClients
 	err = json.Unmarshal(body, &r)
 
 	if err != nil {
 		return nil, err
 	}
 
-	sort.Sort(togglservices.ClientsByName(r))
+	sort.Sort(toggl.ClientsByName(r))
 
 	return r, nil
 }

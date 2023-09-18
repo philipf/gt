@@ -1,4 +1,4 @@
-package togglservices
+package http
 
 import (
 	"bytes"
@@ -9,13 +9,35 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"sort"
-	"strconv"
 
+	"github.com/philipf/gt/internal/toggl"
 	"github.com/spf13/viper"
 )
 
-func CreateProject(projectName string, clientID int64) error {
+type ToggleProjectGateway struct {
+}
+
+type CreateProjectRequest struct {
+	Name      string `json:"name"`
+	IsPrivate bool   `json:"is_private"`
+	IsActive  bool   `json:"active"`
+	ClientID  int64  `json:"cid"`
+}
+
+func (t *ToggleProjectGateway) GetProjects() (toggl.TogglProjects, error) {
+	return toggl.TogglProjects{}, errors.New("not implemented")
+}
+
+func (t *ToggleProjectGateway) CreateProject(projectName string, clientID int64) error {
+	uri, err := getCreateProjectUri()
+	if err != nil {
+		return err
+	}
+
+	u, err := url.Parse(uri)
+	if err != nil {
+		return err
+	}
 
 	project := CreateProjectRequest{
 		Name:      projectName,
@@ -29,9 +51,7 @@ func CreateProject(projectName string, clientID int64) error {
 		return err
 	}
 
-	uri := fmt.Sprintf("%s/api/v9/workspaces/%s/projects", BASE_URI, getWorkspaceID())
-	log.Println("URI:", uri)
-	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
+	req, err := http.NewRequest(http.MethodPost, u.String(), bytes.NewBuffer(data))
 	if err != nil {
 		return err
 	}
@@ -56,23 +76,21 @@ func CreateProject(projectName string, clientID int64) error {
 	return nil
 }
 
-func GetProjects(filter *GetProjectsOpts) (TogglProjects, error) {
-	uri := fmt.Sprintf("%s/api/v9/workspaces/%s/projects", BASE_URI, getWorkspaceID())
+func GetProjects(filter *toggl.GetProjectsOpts) (toggl.TogglProjects, error) {
+	uri, err := getCreateProjectUri()
+	if err != nil {
+		return nil, err
+	}
 
 	u, err := url.Parse(uri)
 	if err != nil {
 		return nil, err
 	}
-
 	q := u.Query()
 	if filter != nil {
 		if filter.Name != "" {
 			q.Add("name", filter.Name)
 		}
-
-		// if !filter.Active {
-		// 	q.Add("active", "false")
-		// }
 	}
 
 	q.Add("active", "true")
@@ -101,48 +119,12 @@ func GetProjects(filter *GetProjectsOpts) (TogglProjects, error) {
 		return nil, err
 	}
 
-	projects, err := unmarshalTogglProject(body)
+	var projects toggl.TogglProjects
+	err = json.Unmarshal(body, &projects)
 
 	if err != nil {
 		return nil, err
 	}
 
-	sort.Sort(ProjectsByName(projects))
-
 	return projects, nil
-}
-
-func unmarshalTogglProject(data []byte) (TogglProjects, error) {
-	var r TogglProjects
-	err := json.Unmarshal(data, &r)
-	return r, err
-}
-
-func ParseProjectTitle(project string) (ProjectTitle, error) {
-	if project == "" {
-		return ProjectTitle{}, errors.New("project cannot be empty")
-	}
-
-	matches := ProjectTileRegEx.FindStringSubmatch(project)
-
-	if matches == nil {
-		return ProjectTitle{}, errors.New("project does not match the naming convention")
-	}
-
-	taskID, err := strconv.Atoi(matches[3])
-	if err != nil {
-		return ProjectTitle{}, fmt.Errorf("failed to convert TaskID to integer: %v", err)
-	}
-
-	return ProjectTitle{
-		Client:   matches[1],
-		IsTask:   (matches[2] == "S"),
-		TaskID:   taskID,
-		TicketID: matches[5], // Note: [4] would be the entire optional group including the pipe
-		Project:  matches[6],
-	}, nil
-}
-
-func ValidProjectName(name string) bool {
-	return ProjectTileRegEx.MatchString(name)
 }
