@@ -9,9 +9,9 @@ import (
 
 const (
 	UriBase        = "https://api.track.toggl.com/api/v9"
-	UriClients     = "%s/api/v9/workspaces/%s/clients"
-	UriTimeEntries = "%s/api/v9/me/time_entries"
-	UriProject     = "%s/api/v9/workspaces/%s/projects"
+	UriClients     = "%s/workspaces/%s/clients"
+	UriTimeEntries = "%s/me/time_entries"
+	UriProject     = "%s/workspaces/%s/projects"
 )
 
 func getAPIToken() (string, error) {

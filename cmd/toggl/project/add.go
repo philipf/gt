@@ -50,7 +50,7 @@ func doInteractive(cmd *cobra.Command) {
 	clientFilter, _ := cmd.Flags().GetString("clientName")
 	clientFilter += "%|" + projectType
 
-	cientService := toggl.ClientServiceImplementation{}
+	cientService := toggl.ClientService{}
 
 	fmt.Printf("Searching for clients with filter: %s\n", clientFilter)
 	clients, err := cientService.GetClients(clientFilter)

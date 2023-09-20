@@ -1,13 +1,16 @@
 package toggl
 
-type ClientService interface {
-	GetClients(filter string) (TogglClients, error)
-}
-
-type ClientServiceImplementation struct {
+type ClientService struct {
 	ClientGateway ClientGateway
 }
 
-func (c *ClientServiceImplementation) GetClients(filter string) (TogglClients, error) {
-	return c.ClientGateway.GetClients(filter)
+func (c *ClientService) GetClients(filter string) (TogglClients, error) {
+	gw := c.ClientGateway
+	return gw.GetClients(filter)
+}
+
+func NewClientService(clientGateway ClientGateway) ClientService {
+	s := ClientService{}
+	s.ClientGateway = clientGateway
+	return s
 }

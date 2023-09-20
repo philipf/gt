@@ -3,7 +3,6 @@ package client
 import (
 	"fmt"
 
-	"github.com/philipf/gt/internal/toggl"
 	"github.com/spf13/cobra"
 )
 
@@ -19,11 +18,7 @@ gt toggl client list
 
 	Run: func(cmd *cobra.Command, args []string) {
 		filter, _ := cmd.Flags().GetString("filter")
-
-		service := toggl.ClientServiceImplementation{}
-		//service.ClientGateway = http.TogglClientGateway{}
-
-		items, err := service.GetClients(filter)
+		items, err := clientService.GetClients(filter)
 		cobra.CheckErr(err)
 
 		for _, i := range items {
@@ -37,5 +32,4 @@ func init() {
 
 	// filter
 	listCmd.Flags().StringP("filter", "f", "", "Filter clients by name")
-
 }
