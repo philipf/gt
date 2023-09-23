@@ -4,7 +4,7 @@ go 1.21.0
 
 require (
 	github.com/google/uuid v1.3.1
-	github.com/hashicorp/go-azure-sdk v0.20230331.1143618
+	github.com/hashicorp/go-azure-sdk v0.20230915.1163220
 	github.com/manicminer/hamilton v0.63.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
@@ -17,9 +17,9 @@ require (
 	github.com/dlclark/regexp2 v1.8.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/hashicorp/go-azure-helpers v0.55.0 // indirect
+	github.com/hashicorp/go-azure-helpers v0.61.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.2 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.4 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
