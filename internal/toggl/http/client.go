@@ -1,19 +1,25 @@
-package togglservices
+package http
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"sort"
 
+	"github.com/philipf/gt/internal/toggl"
 	"github.com/spf13/viper"
 )
 
-func GetClients(filter string) (TogglClients, error) {
-	uri := fmt.Sprintf("%s/api/v9/workspaces/%s/clients", BASE_URI, getWorkspaceID())
+type TogglClientGateway struct {
+}
+
+func (t *TogglClientGateway) GetClients(filter string) (toggl.TogglClients, error) {
+	uri, err := getApiClientsListUri()
+	if err != nil {
+		return nil, err
+	}
 
 	u, err := url.Parse(uri)
 	if err != nil {
@@ -49,19 +55,14 @@ func GetClients(filter string) (TogglClients, error) {
 		return nil, err
 	}
 
-	clients, err := unmarshalTogglClient(body)
+	var r toggl.TogglClients
+	err = json.Unmarshal(body, &r)
 
 	if err != nil {
 		return nil, err
 	}
 
-	sort.Sort(ClientsByName(clients))
+	sort.Sort(toggl.ClientsByName(r))
 
-	return clients, nil
-}
-
-func unmarshalTogglClient(data []byte) (TogglClients, error) {
-	var r TogglClients
-	err := json.Unmarshal(data, &r)
-	return r, err
+	return r, nil
 }

@@ -1,4 +1,4 @@
-package toggl
+package togglcmd
 
 import (
 	"github.com/philipf/gt/cmd"

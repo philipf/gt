@@ -3,7 +3,7 @@ package project
 import (
 	"fmt"
 
-	"github.com/philipf/gt/internal/togglservices"
+	"github.com/philipf/gt/internal/toggl"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +20,7 @@ gt toggl project list
 	Run: func(cmd *cobra.Command, args []string) {
 		//filter, _ := cmd.Flags().GetString("filter")
 
-		items, err := togglservices.GetProjects(nil)
+		items, err := projectService.GetProjects(nil)
 		cobra.CheckErr(err)
 
 		validate, err := cmd.Flags().GetBool("validate")
@@ -33,11 +33,11 @@ gt toggl project list
 			return
 		}
 
-		invalidProjects := make(togglservices.TogglProjects, 0)
+		invalidProjects := make(toggl.TogglProjects, 0)
 
 		for _, i := range items {
 			// only print the projects that don't match the naming convention
-			if !togglservices.ValidProjectName(i.Name) {
+			if !projectService.ValidProjectName(i.Name) {
 				invalidProjects = append(invalidProjects, i)
 			}
 		}
@@ -57,7 +57,7 @@ gt toggl project list
 }
 
 func init() {
-	projectsCmd.AddCommand(listCmd)
+	projectCmd.AddCommand(listCmd)
 
 	// filter
 	listCmd.Flags().Bool("validate", false, "Validate projects matches the naming convention")

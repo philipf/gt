@@ -17,17 +17,22 @@ const (
 	CONFIG_FILE_TYPE = "yaml"
 )
 
-func Init() error {
-	// Check if there is a config file in the home directory for gt, if not, create one otherwise use it
-
-	// If there is no config file in the home directory, create one
+func GetGtConfigPath() (string, error) {
 	homeDir, err := os.UserHomeDir()
 
 	if err != nil {
-		return fmt.Errorf("cannot find user's home directory [%v]", err)
+		return "", fmt.Errorf("cannot find user's home directory [%v]", err)
 	}
 
-	gtHomePath := filepath.Join(homeDir, gtHomePath)
+	return filepath.Join(homeDir, gtHomePath), nil
+}
+
+// Check if there is a config file in the home directory for gt, if not, create one otherwise use it
+func Init() error {
+	gtHomePath, err := GetGtConfigPath()
+	if err != nil {
+		return err
+	}
 
 	// Check if the directory exists, if not, create it
 	_, err = os.Stat(gtHomePath)

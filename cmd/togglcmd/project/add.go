@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/philipf/gt/internal/console"
-	"github.com/philipf/gt/internal/togglservices"
+	"github.com/philipf/gt/internal/toggl"
 	"github.com/spf13/cobra"
 )
 
@@ -50,8 +50,10 @@ func doInteractive(cmd *cobra.Command) {
 	clientFilter, _ := cmd.Flags().GetString("clientName")
 	clientFilter += "%|" + projectType
 
+	cientService := toggl.ClientService{}
+
 	fmt.Printf("Searching for clients with filter: %s\n", clientFilter)
-	clients, err := togglservices.GetClients(clientFilter)
+	clients, err := cientService.GetClients(clientFilter)
 	cobra.CheckErr(err)
 
 	var clientID int64 = 0
@@ -115,7 +117,7 @@ func doInteractive(cmd *cobra.Command) {
 
 	confirm = strings.ToUpper(confirm)
 	if confirm == "Y" {
-		err = togglservices.CreateProject(projectName, clientID)
+		err = projectService.CreateProject(projectName, clientID)
 		cobra.CheckErr(err)
 		fmt.Println("Project created successfully")
 	} else {
@@ -137,12 +139,12 @@ func addProject(cmd *cobra.Command) {
 		return
 	}
 
-	err := togglservices.CreateProject(name, clientID)
+	err := projectService.CreateProject(name, clientID)
 	cobra.CheckErr(err)
 }
 
 func init() {
-	projectsCmd.AddCommand(addCmd)
+	projectCmd.AddCommand(addCmd)
 
 	addCmd.Flags().StringP("name", "n", "", "Name of the project")
 	addCmd.Flags().Int64P("clientID", "c", 0, "ClientID that the project belongs to")

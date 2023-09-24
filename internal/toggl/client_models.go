@@ -1,4 +1,4 @@
-package togglservices
+package toggl
 
 type TogglClients []*TogglClientElement
 

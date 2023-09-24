@@ -1,16 +1,4 @@
-package togglservices
-
-import "regexp"
-
-// var ProjectTileRegEx = regexp.MustCompile(`^\[([^|]+)\|([P|S])\|(\d+)(\|(T\d{8}\.\d+))?\] (.+)$`)
-var ProjectTileRegEx = regexp.MustCompile(`^\[([^|]+)\|([P|S])\|(\d+)(\|(T\d{8}\.\d+))?\] (.+)$`)
-
-type CreateProjectRequest struct {
-	Name      string `json:"name"`
-	IsPrivate bool   `json:"is_private"`
-	IsActive  bool   `json:"active"`
-	ClientID  int64  `json:"cid"`
-}
+package toggl
 
 type GetProjectsOpts struct {
 	Name string
