@@ -4,18 +4,22 @@ import (
 	"time"
 )
 
-type TimeService interface {
-	GetTimeEntries(start, end time.Time) (TogglTimeEntries, error)
+type TimeService struct {
+	timeEntryGateway TimeEntryGateway
+	clientService    ClientService
+	projectService   ProjectService
 }
 
-type TimeServiceImplementation struct {
-	TimeEntryGateway TimeEntryGateway
-	ClientService    ClientService
-	ProjectService   ProjectService
+func NewTimeService(timeEntryGateway TimeEntryGateway, clientService ClientService, projectService ProjectService) TimeService {
+	return TimeService{
+		timeEntryGateway: timeEntryGateway,
+		clientService:    clientService,
+		projectService:   projectService,
+	}
 }
 
-func (t *TimeServiceImplementation) GetTimeEntries(start, end time.Time) (TogglTimeEntries, error) {
-	entries, err := t.TimeEntryGateway.GetTimeEntries(start, end)
+func (t *TimeService) GetTimeEntries(start, end time.Time) (TogglTimeEntries, error) {
+	entries, err := t.timeEntryGateway.GetTimeEntries(start, end)
 	if err != nil {
 		return nil, err
 	}
@@ -28,13 +32,13 @@ func (t *TimeServiceImplementation) GetTimeEntries(start, end time.Time) (TogglT
 	return entries, nil
 }
 
-func (t *TimeServiceImplementation) includeProjectAndClient(timeEntries TogglTimeEntries) error {
-	projects, err := t.ProjectService.GetProjects(nil)
+func (t *TimeService) includeProjectAndClient(timeEntries TogglTimeEntries) error {
+	projects, err := t.projectService.GetProjects(nil)
 	if err != nil {
 		return err
 	}
 
-	clients, err := t.ClientService.GetClients("")
+	clients, err := t.clientService.GetClients("")
 	if err != nil {
 		return err
 	}

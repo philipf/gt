@@ -20,8 +20,7 @@ gt toggl project list
 	Run: func(cmd *cobra.Command, args []string) {
 		//filter, _ := cmd.Flags().GetString("filter")
 
-		service := toggl.ProjectServiceImplementation{}
-		items, err := service.GetProjects(nil)
+		items, err := projectService.GetProjects(nil)
 		cobra.CheckErr(err)
 
 		validate, err := cmd.Flags().GetBool("validate")
@@ -38,7 +37,7 @@ gt toggl project list
 
 		for _, i := range items {
 			// only print the projects that don't match the naming convention
-			if !service.ValidProjectName(i.Name) {
+			if !projectService.ValidProjectName(i.Name) {
 				invalidProjects = append(invalidProjects, i)
 			}
 		}
@@ -58,7 +57,7 @@ gt toggl project list
 }
 
 func init() {
-	projectsCmd.AddCommand(listCmd)
+	projectCmd.AddCommand(listCmd)
 
 	// filter
 	listCmd.Flags().Bool("validate", false, "Validate projects matches the naming convention")

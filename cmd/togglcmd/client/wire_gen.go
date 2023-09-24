@@ -14,19 +14,19 @@ import (
 
 // Injectors from inject_defaults.go:
 
-func initializeClientService() toggl.ClientService {
-	togglClientGateway := provideToggleClientGateway()
+func initialiseClientService() toggl.ClientService {
+	togglClientGateway := provideTogglClientGateway()
 	togglClientService := toggl.NewClientService(togglClientGateway)
 	return togglClientService
 }
 
 // inject_defaults.go:
 
-func provideToggleClientGateway() *http.TogglClientGateway {
+func provideTogglClientGateway() *http.TogglClientGateway {
 	g := new(http.TogglClientGateway)
 	return g
 }
 
 var set = wire.NewSet(
-	provideToggleClientGateway, wire.Bind(new(toggl.ClientGateway), new(*http.TogglClientGateway)), toggl.NewClientService,
+	provideTogglClientGateway, wire.Bind(new(toggl.ClientGateway), new(*http.TogglClientGateway)), toggl.NewClientService,
 )

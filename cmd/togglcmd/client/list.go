@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// gtdCmd represents the action command
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List clietns",
@@ -30,6 +29,5 @@ gt toggl client list
 func init() {
 	clientsCmd.AddCommand(listCmd)
 
-	// filter
 	listCmd.Flags().StringP("filter", "f", "", "Filter clients by name")
 }

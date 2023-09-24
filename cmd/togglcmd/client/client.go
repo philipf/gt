@@ -1,12 +1,12 @@
 package client
 
 import (
-	cmdToggl "github.com/philipf/gt/cmd/toggl"
-	internalToggl "github.com/philipf/gt/internal/toggl"
+	"github.com/philipf/gt/cmd/togglcmd"
+	"github.com/philipf/gt/internal/toggl"
 	"github.com/spf13/cobra"
 )
 
-var clientService internalToggl.ClientService
+var clientService toggl.ClientService
 
 // gtdCmd represents the action command
 var clientsCmd = &cobra.Command{
@@ -21,9 +21,9 @@ var clientsCmd = &cobra.Command{
 
 func init() {
 	cobra.OnInitialize(initServices)
-	cmdToggl.TogglCmd.AddCommand(clientsCmd)
+	togglcmd.TogglCmd.AddCommand(clientsCmd)
 }
 
 func initServices() {
-	clientService = initializeClientService()
+	clientService = initialiseClientService()
 }

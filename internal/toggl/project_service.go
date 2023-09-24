@@ -10,25 +10,23 @@ import (
 
 var projectTileRegEx = regexp.MustCompile(`^\[([^|]+)\|([P|S])\|(\d+)(\|(T\d{8}\.\d+))?\] (.+)$`)
 
-type ProjectService interface {
-	CreateProject(projectName string, clientID int64) error
-	GetProjects(filter *GetProjectsOpts) (TogglProjects, error)
-
-	ParseProjectTitle(project string) (ProjectTitle, error)
-	ValidProjectName(name string) bool
-}
-
-type ProjectServiceImplementation struct {
+type ProjectService struct {
 	ProjectGateway ProjectGateway
 }
 
-func (p *ProjectServiceImplementation) CreateProject(projectName string, clientID int64) error {
+func NewProjectService(projectGateway ProjectGateway) ProjectService {
+	s := ProjectService{}
+	s.ProjectGateway = projectGateway
+	return s
+}
+
+func (p *ProjectService) CreateProject(projectName string, clientID int64) error {
 	return p.ProjectGateway.CreateProject(projectName, clientID)
 
 }
 
-func (p *ProjectServiceImplementation) GetProjects(filter *GetProjectsOpts) (TogglProjects, error) {
-	projects, err := p.ProjectGateway.GetProjects()
+func (p *ProjectService) GetProjects(filter *GetProjectsOpts) (TogglProjects, error) {
+	projects, err := p.ProjectGateway.GetProjects(filter)
 	if err != nil {
 		return TogglProjects{}, err
 	}
@@ -37,7 +35,7 @@ func (p *ProjectServiceImplementation) GetProjects(filter *GetProjectsOpts) (Tog
 	return projects, nil
 }
 
-func (p *ProjectServiceImplementation) ParseProjectTitle(project string) (ProjectTitle, error) {
+func (p *ProjectService) ParseProjectTitle(project string) (ProjectTitle, error) {
 	if project == "" {
 		return ProjectTitle{}, errors.New("project cannot be empty")
 	}
@@ -62,6 +60,6 @@ func (p *ProjectServiceImplementation) ParseProjectTitle(project string) (Projec
 	}, nil
 }
 
-func (p *ProjectServiceImplementation) ValidProjectName(name string) bool {
+func (p *ProjectService) ValidProjectName(name string) bool {
 	return projectTileRegEx.MatchString(name)
 }

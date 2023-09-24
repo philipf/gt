@@ -117,7 +117,6 @@ func doInteractive(cmd *cobra.Command) {
 
 	confirm = strings.ToUpper(confirm)
 	if confirm == "Y" {
-		projectService := toggl.ProjectServiceImplementation{}
 		err = projectService.CreateProject(projectName, clientID)
 		cobra.CheckErr(err)
 		fmt.Println("Project created successfully")
@@ -140,14 +139,12 @@ func addProject(cmd *cobra.Command) {
 		return
 	}
 
-	service := toggl.ProjectServiceImplementation{}
-
-	err := service.CreateProject(name, clientID)
+	err := projectService.CreateProject(name, clientID)
 	cobra.CheckErr(err)
 }
 
 func init() {
-	projectsCmd.AddCommand(addCmd)
+	projectCmd.AddCommand(addCmd)
 
 	addCmd.Flags().StringP("name", "n", "", "Name of the project")
 	addCmd.Flags().Int64P("clientID", "c", 0, "ClientID that the project belongs to")

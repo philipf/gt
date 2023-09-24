@@ -5,7 +5,7 @@ import (
 )
 
 type ProjectGateway interface {
-	GetProjects() (TogglProjects, error)
+	GetProjects(filter *GetProjectsOpts) (TogglProjects, error)
 	CreateProject(projectName string, clientID int64) error
 }
 

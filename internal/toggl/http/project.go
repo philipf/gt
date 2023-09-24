@@ -3,7 +3,6 @@ package http
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -14,9 +13,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-type ToggleProjectGateway struct {
-}
-
 type CreateProjectRequest struct {
 	Name      string `json:"name"`
 	IsPrivate bool   `json:"is_private"`
@@ -24,59 +20,10 @@ type CreateProjectRequest struct {
 	ClientID  int64  `json:"cid"`
 }
 
-func (t *ToggleProjectGateway) GetProjects() (toggl.TogglProjects, error) {
-	return toggl.TogglProjects{}, errors.New("not implemented")
+type TogglProjectGateway struct {
 }
 
-func (t *ToggleProjectGateway) CreateProject(projectName string, clientID int64) error {
-	uri, err := getCreateProjectUri()
-	if err != nil {
-		return err
-	}
-
-	u, err := url.Parse(uri)
-	if err != nil {
-		return err
-	}
-
-	project := CreateProjectRequest{
-		Name:      projectName,
-		IsPrivate: true,
-		IsActive:  true,
-		ClientID:  clientID,
-	}
-
-	data, err := json.Marshal(project)
-	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequest(http.MethodPost, u.String(), bytes.NewBuffer(data))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.SetBasicAuth(viper.GetString("toggl.ApiKey"), "api_token")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	body, _ := io.ReadAll(resp.Body)
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("%d failed to create project: %s", resp.StatusCode, body)
-	}
-
-	fmt.Println("Project created successfully:", string(body))
-	return nil
-}
-
-func GetProjects(filter *toggl.GetProjectsOpts) (toggl.TogglProjects, error) {
+func (t *TogglProjectGateway) GetProjects(filter *toggl.GetProjectsOpts) (toggl.TogglProjects, error) {
 	uri, err := getCreateProjectUri()
 	if err != nil {
 		return nil, err
@@ -127,4 +74,52 @@ func GetProjects(filter *toggl.GetProjectsOpts) (toggl.TogglProjects, error) {
 	}
 
 	return projects, nil
+}
+
+func (t *TogglProjectGateway) CreateProject(projectName string, clientID int64) error {
+	uri, err := getCreateProjectUri()
+	if err != nil {
+		return err
+	}
+
+	u, err := url.Parse(uri)
+	if err != nil {
+		return err
+	}
+
+	project := CreateProjectRequest{
+		Name:      projectName,
+		IsPrivate: true,
+		IsActive:  true,
+		ClientID:  clientID,
+	}
+
+	data, err := json.Marshal(project)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, u.String(), bytes.NewBuffer(data))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.SetBasicAuth(viper.GetString("toggl.ApiKey"), "api_token")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("%d failed to create project: %s", resp.StatusCode, body)
+	}
+
+	fmt.Println("Project created successfully:", string(body))
+	return nil
 }

@@ -11,10 +11,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-type TimeEntryGateway struct {
+type TogglTimeEntriesGateway struct {
 }
 
-func (t *TimeEntryGateway) GetTimeEntries(start, end time.Time) (toggl.TogglTimeEntries, error) {
+func (t *TogglTimeEntriesGateway) GetTimeEntries(start, end time.Time) (toggl.TogglTimeEntries, error) {
 	uri, err := getTimeEntriesUri()
 	if err != nil {
 		return nil, err
@@ -31,13 +31,15 @@ func (t *TimeEntryGateway) GetTimeEntries(start, end time.Time) (toggl.TogglTime
 	u.RawQuery = q.Encode()
 
 	client := &http.Client{}
-	req, err := http.NewRequest(http.MethodPost, u.String(), nil)
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.SetBasicAuth(viper.GetString("toggl.ApiKey"), "api_token")
+
+	fmt.Println("URI:", u.String())
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -59,6 +61,9 @@ func (t *TimeEntryGateway) GetTimeEntries(start, end time.Time) (toggl.TogglTime
 	// Filter out entries with ServerDeletedAt set
 	var filteredEntries toggl.TogglTimeEntries
 	for _, entry := range timeEntries {
+		entry.Start = entry.Start.Local()
+		entry.Stop = entry.Stop.Local()
+		// fmt.Println("Entry:", entry)
 		if entry.ServerDeletedAt == nil {
 			filteredEntries = append(filteredEntries, entry)
 		}

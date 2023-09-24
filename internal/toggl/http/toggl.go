@@ -14,21 +14,21 @@ const (
 	UriProject     = "%s/workspaces/%s/projects"
 )
 
-func getAPIToken() (string, error) {
+func getAPIToken() string {
 	r := viper.GetString("toggl.apiKey")
 
-	if r == "" {
-		return "", errors.New("No API token found")
-	}
+	// if r == "" {
+	// 	return "", errors.New("No API token found")
+	// }
 
-	return r, nil
+	return r
 }
 
 func getWorkspaceID() (string, error) {
 	r := viper.GetString("toggl.workspace")
 
 	if r == "" {
-		return "", errors.New("No workspace ID found")
+		return "", errors.New("no workspace ID found")
 	}
 
 	return r, nil
@@ -46,11 +46,11 @@ func getApiClientsListUri() (string, error) {
 }
 
 func getTimeEntriesUri() (string, error) {
-	workspaceID, err := getWorkspaceID()
-	if err != nil {
-		return "", err
-	}
-	uri := fmt.Sprintf(UriClients, UriBase, workspaceID)
+	//workspaceID, err := getWorkspaceID()
+	// if err != nil {
+	// 	return "", err
+	// }
+	uri := fmt.Sprintf(UriTimeEntries, UriBase)
 	return uri, nil
 }
 
