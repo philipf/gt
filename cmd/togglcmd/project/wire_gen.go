@@ -20,6 +20,12 @@ func initialiseProjectService() toggl.ProjectService {
 	return togglProjectService
 }
 
+func initialiseClientService() toggl.ClientService {
+	togglClientGateway := provideTogglClientGateway()
+	togglClientService := toggl.NewClientService(togglClientGateway)
+	return togglClientService
+}
+
 // inject_defaults.go:
 
 func provideTogglProjectGateway() *http.TogglProjectGateway {
@@ -29,4 +35,13 @@ func provideTogglProjectGateway() *http.TogglProjectGateway {
 
 var set = wire.NewSet(
 	provideTogglProjectGateway, wire.Bind(new(toggl.ProjectGateway), new(*http.TogglProjectGateway)), toggl.NewProjectService,
+)
+
+func provideTogglClientGateway() *http.TogglClientGateway {
+	g := new(http.TogglClientGateway)
+	return g
+}
+
+var clientSet = wire.NewSet(
+	provideTogglClientGateway, wire.Bind(new(toggl.ClientGateway), new(*http.TogglClientGateway)), toggl.NewClientService,
 )

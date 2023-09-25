@@ -1,7 +1,7 @@
 //go:build wireinject
 // +build wireinject
 
-package projectcmd
+package project
 
 import (
 	"github.com/google/wire"
@@ -24,3 +24,19 @@ func initialiseProjectService() toggl.ProjectService {
 	wire.Build(set)
 	return toggl.ProjectService{}
 }
+
+func initialiseClientService() toggl.ClientService {
+	wire.Build(clientSet)
+	return toggl.ClientService{}
+}
+
+func provideTogglClientGateway() *http.TogglClientGateway {
+	g := new(http.TogglClientGateway)
+	return g
+}
+
+var clientSet = wire.NewSet(
+	provideTogglClientGateway,
+	wire.Bind(new(toggl.ClientGateway), new(*http.TogglClientGateway)),
+	toggl.NewClientService,
+)

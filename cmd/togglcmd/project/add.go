@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/philipf/gt/internal/console"
-	"github.com/philipf/gt/internal/toggl"
 	"github.com/spf13/cobra"
 )
 
@@ -50,10 +49,8 @@ func doInteractive(cmd *cobra.Command) {
 	clientFilter, _ := cmd.Flags().GetString("clientName")
 	clientFilter += "%|" + projectType
 
-	cientService := toggl.ClientService{}
-
 	fmt.Printf("Searching for clients with filter: %s\n", clientFilter)
-	clients, err := cientService.GetClients(clientFilter)
+	clients, err := clientService.GetClients(clientFilter)
 	cobra.CheckErr(err)
 
 	var clientID int64 = 0

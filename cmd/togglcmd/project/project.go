@@ -7,6 +7,7 @@ import (
 )
 
 var projectService toggl.ProjectService
+var clientService toggl.ClientService
 
 // gtdCmd represents the action command
 var projectCmd = &cobra.Command{
@@ -27,4 +28,5 @@ func init() {
 
 func initServices() {
 	projectService = initialiseProjectService()
+	clientService = initialiseClientService()
 }
