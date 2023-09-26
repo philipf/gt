@@ -19,37 +19,13 @@ var reportCmd = &cobra.Command{
 	Long:  `Report Service	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		loc, err := time.LoadLocation("Local")
-		if err != nil {
-			fmt.Println("Error loading location:", err)
-			return
-		}
+		sd, ed := getDateRange(cmd)
 
-		sdStr, err := cmd.Flags().GetString("sd")
-		if err != nil {
-			cobra.CheckErr(err)
-		}
+		// print the date range
+		fmt.Printf("Start Date: %s\n", sd)
+		fmt.Printf("End Date: %s\n", ed)
 
-		edStr, err := cmd.Flags().GetString("ed")
-		if err != nil {
-			cobra.CheckErr(err)
-		}
-
-		sd, err := time.ParseInLocation("2006/01/02", sdStr, loc)
-		if err != nil {
-			cobra.CheckErr(err)
-		}
-
-		ed, err := time.ParseInLocation("2006/01/02", edStr, loc)
-		if err != nil {
-			cobra.CheckErr(err)
-		}
-
-		ed = ed.AddDate(0, 0, 1).Add(-time.Second)
-
-		fmt.Println(sd)
-		fmt.Println(ed)
-
+		panic("test")
 		rpt, err := reportService.BuildReport(sd, ed)
 		if err != nil {
 			cobra.CheckErr(err)
@@ -101,11 +77,117 @@ func init() {
 
 	reportCmd.Flags().StringP("jsonOutput", "o", "/tmp/time.json", "JSON output file")
 
-	reportCmd.MarkFlagRequired("sd")
-	reportCmd.MarkFlagRequired("ed")
+	reportCmd.Flags().BoolP("today", "", false, "Run a report for today")
+	reportCmd.Flags().BoolP("eyesterday", "", false, "Run a report for eyesterday")
+	reportCmd.Flags().BoolP("yesterday", "", false, "Run a report for yesterday")
+	reportCmd.Flags().BoolP("thisweek", "", false, "Run a report for this week")
+	reportCmd.Flags().BoolP("lastweek", "", false, "Run a report for last week")
+
+	//	reportCmd.MarkFlagRequired("sd")
+	//	reportCmd.MarkFlagRequired("ed")
 
 }
 
 func initServices() {
 	reportService = initialiseReportService()
+}
+
+func getDateRange(cmd *cobra.Command) (time.Time, time.Time) {
+	// First check if any of the fixed periods have been selected (today, yesterday, etc)
+	today, err := cmd.Flags().GetBool("today")
+	if err != nil {
+		cobra.CheckErr(err)
+	}
+
+	now := time.Now()
+
+	if today {
+		// Set the start date to today, trimming the time
+		sd := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		// Set the end date to tomorrow, trimming the time and subtracting a second
+		ed := sd.AddDate(0, 0, 1).Add(-time.Second)
+		return sd, ed
+	}
+
+	// check if yesterday has been selected
+	yesterday, err := cmd.Flags().GetBool("yesterday")
+	if err != nil {
+		cobra.CheckErr(err)
+	}
+
+	if yesterday {
+		// Set the start date to yesterday, trimming the time
+		now := now.AddDate(0, 0, -1)
+		sd := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		// Set the end date to today, trimming the time and subtracting a second
+		ed := sd.AddDate(0, 0, 1).Add(-time.Second)
+		return sd, ed
+	}
+
+	// check if eyesterday has been selected
+	eyesterday, err := cmd.Flags().GetBool("eyesterday")
+	if err != nil {
+		cobra.CheckErr(err)
+	}
+
+	if eyesterday {
+		// Set the start date to yesterday, trimming the time
+		now := now.AddDate(0, 0, -2)
+		sd := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+
+		// Set the end date to yesterday, trimming the time and subtracting a second
+		ed := sd.AddDate(0, 0, 1).Add(-time.Second)
+		return sd, ed
+	}
+
+	// check if thisweek has been selected
+	thisweek, err := cmd.Flags().GetBool("thisweek")
+	if err != nil {
+		cobra.CheckErr(err)
+	}
+
+	if thisweek {
+		// TODO: get logic from the gt-at package
+		return time.Now(), time.Now()
+	}
+
+	// check if lastweek has been selected
+	lastweek, err := cmd.Flags().GetBool("lastweek")
+	if err != nil {
+		cobra.CheckErr(err)
+	}
+
+	if lastweek {
+		// TODO: get logic from the gt-at package
+		return time.Now(), time.Now()
+	}
+
+	sdStr, err := cmd.Flags().GetString("sd")
+	if err != nil {
+		cobra.CheckErr(err)
+	}
+
+	edStr, err := cmd.Flags().GetString("ed")
+	if err != nil {
+		cobra.CheckErr(err)
+	}
+
+	loc, err := time.LoadLocation("Local")
+	if err != nil {
+		cobra.CheckErr(err)
+	}
+
+	sd, err := time.ParseInLocation("2006/01/02", sdStr, loc)
+	if err != nil {
+		cobra.CheckErr(err)
+	}
+
+	ed, err := time.ParseInLocation("2006/01/02", edStr, loc)
+	if err != nil {
+		cobra.CheckErr(err)
+	}
+
+	ed = ed.AddDate(0, 0, 1).Add(-time.Second)
+
+	return sd, ed
 }
