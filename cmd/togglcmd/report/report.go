@@ -2,8 +2,7 @@ package report
 
 import (
 	"fmt"
-	"math"
-	"strings"
+	"os"
 	"time"
 
 	"github.com/philipf/gt/cmd/togglcmd"
@@ -51,12 +50,42 @@ var reportCmd = &cobra.Command{
 		fmt.Println(sd)
 		fmt.Println(ed)
 
-		r, err := reportService.GetReport(sd, ed)
+		rpt, err := reportService.BuildReport(sd, ed)
 		if err != nil {
 			cobra.CheckErr(err)
 		}
 
-		fmt.Println(generateReport(r))
+		console, err := (cmd.Flags().GetBool("console"))
+		if err != nil {
+			cobra.CheckErr(err)
+		}
+
+		if console {
+			r, err := reportService.BuildStringReport(rpt)
+			if err != nil {
+				cobra.CheckErr(err)
+			}
+			fmt.Println(*r)
+		}
+
+		json, err := (cmd.Flags().GetBool("json"))
+		if err != nil {
+			cobra.CheckErr(err)
+		}
+
+		if json {
+			jsonOutput, err := cmd.Flags().GetString("jsonOutput")
+			if err != nil {
+				cobra.CheckErr(err)
+			}
+
+			jsonBytes, err := reportService.BuildJsonReport(rpt)
+			if err != nil {
+				cobra.CheckErr(err)
+			}
+
+			os.WriteFile(jsonOutput, *jsonBytes, 0644)
+		}
 	},
 }
 
@@ -66,57 +95,17 @@ func init() {
 
 	reportCmd.Flags().StringP("sd", "s", "", "Start date")
 	reportCmd.Flags().StringP("ed", "e", "", "End date")
+
+	reportCmd.Flags().BoolP("console", "c", false, "Console Report")
+	reportCmd.Flags().BoolP("json", "j", false, "JSON Report")
+
+	reportCmd.Flags().StringP("jsonOutput", "o", "/tmp/time.json", "JSON output file")
+
+	reportCmd.MarkFlagRequired("sd")
+	reportCmd.MarkFlagRequired("ed")
+
 }
 
 func initServices() {
 	reportService = initialiseReportService()
-}
-
-func generateReport(r *toggl.Report) string {
-	totalDuration := 0.0
-	var sb strings.Builder
-
-	sd := r.StartDate.Local()
-	ed := r.EndDate.Local()
-
-	// Print the header with the date range
-	sb.WriteString("---\n")
-	sb.WriteString(fmt.Sprintf("Start: %s to %s\n", sd.Format("2006-01-02"), ed.Format("2006-01-02")))
-	sb.WriteString("-------------------------------\n")
-
-	for _, projectSection := range r.ProjectSections {
-		sb.WriteString(fmt.Sprintf("%s\n", projectSection.Project))
-
-		for _, daySection := range projectSection.DaySections {
-			// Print DaySection
-			d := daySection.Date
-			sb.WriteString(fmt.Sprintf("%s %s\n", d.Format("2006-01-02"), d.Weekday().String()))
-			sb.WriteString("Start   End    Time   Notes\n")
-
-			for _, intervalSection := range daySection.IntervalSections {
-				// Print IntervalSection
-				sb.WriteString(fmt.Sprintf("%s - %s  %s  %s\n",
-					intervalSection.StartDateTime.Format("15:04"),
-					intervalSection.EndDateTime.Format("15:04"),
-					intervalSection.DurationS(),
-					intervalSection.Description,
-				))
-			}
-			dayDuration := roundToQuarterHour(daySection.Duration())
-			totalDuration += dayDuration
-			sb.WriteString(fmt.Sprintf("Duration: %.2f\n\n", dayDuration))
-		}
-		sb.WriteString("\n")
-	}
-
-	sb.WriteString(fmt.Sprintf("Report Duration: %.2f\n", totalDuration))
-	//sb.WriteString(fmt.Sprintf("Report Duration: %.2f\n", r.Duration()))
-	sb.WriteString("---")
-
-	return sb.String()
-}
-
-func roundToQuarterHour(duration float64) float64 {
-	rounded := math.Ceil(duration*4) / 4.0
-	return rounded
 }
