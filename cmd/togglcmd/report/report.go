@@ -25,7 +25,6 @@ var reportCmd = &cobra.Command{
 		fmt.Printf("Start Date: %s\n", sd)
 		fmt.Printf("End Date: %s\n", ed)
 
-		panic("test")
 		rpt, err := reportService.BuildReport(sd, ed)
 		if err != nil {
 			cobra.CheckErr(err)
@@ -148,7 +147,11 @@ func getDateRange(cmd *cobra.Command) (time.Time, time.Time) {
 
 	if thisweek {
 		// TODO: get logic from the gt-at package
-		return time.Now(), time.Now()
+		thisSunday := sundayOfTheWeek(time.Now())
+		sd := time.Date(thisSunday.Year(), thisSunday.Month(), thisSunday.Day(), 0, 0, 0, 0, thisSunday.Location())
+		ed := sd.AddDate(0, 0, 7).Add(-time.Second)
+
+		return sd, ed
 	}
 
 	// check if lastweek has been selected
@@ -159,7 +162,12 @@ func getDateRange(cmd *cobra.Command) (time.Time, time.Time) {
 
 	if lastweek {
 		// TODO: get logic from the gt-at package
-		return time.Now(), time.Now()
+		thisSunday := sundayOfTheWeek(time.Now())
+		lastSunday := thisSunday.AddDate(0, 0, -7)
+		sd := time.Date(lastSunday.Year(), lastSunday.Month(), lastSunday.Day(), 0, 0, 0, 0, lastSunday.Location())
+		ed := sd.AddDate(0, 0, 7).Add(-time.Second)
+
+		return sd, ed
 	}
 
 	sdStr, err := cmd.Flags().GetString("sd")
@@ -190,4 +198,12 @@ func getDateRange(cmd *cobra.Command) (time.Time, time.Time) {
 	ed = ed.AddDate(0, 0, 1).Add(-time.Second)
 
 	return sd, ed
+}
+
+// SundayOfTheWeek returns the date of the Sunday of the week based on a provided date.
+func sundayOfTheWeek(t time.Time) time.Time {
+	// Subtract the weekday number from the given date.
+	// Since Sunday = 0 in time.Weekday, it gives the exact offset we need.
+	offset := int(t.Weekday())
+	return t.AddDate(0, 0, -offset)
 }
