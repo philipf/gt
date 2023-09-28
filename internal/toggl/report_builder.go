@@ -31,6 +31,16 @@ func (r *ReportBuilder) BuildReport(sd, ed time.Time) (*Report, error) {
 		return nil, err
 	}
 
+	// Validate that all entries have a project
+	for _, entry := range timeEntries {
+		if entry.Project == "" {
+			return nil, fmt.Errorf("entry %s-%s '%s' has no project",
+				entry.Start.Format(time.DateTime),
+				entry.Stop.Format(time.TimeOnly),
+				entry.Description)
+		}
+	}
+
 	// Group by ProjectKey
 	projectGroups := make(map[ProjectKey]TogglTimeEntries)
 	for _, entry := range timeEntries {
