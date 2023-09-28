@@ -74,16 +74,13 @@ func init() {
 	reportCmd.Flags().Lookup("ot").NoOptDefVal = "/tmp/time.txt"
 
 	reportCmd.Flags().StringVarP(&jsonOutput, "oj", "", "", "Writes a JSON report file.")
+	reportCmd.Flags().Lookup("oj").NoOptDefVal = "/tmp/time.json"
 
 	reportCmd.Flags().BoolP("today", "", false, "Run a report for today")
 	reportCmd.Flags().BoolP("eyesterday", "", false, "Run a report for eyesterday")
 	reportCmd.Flags().BoolP("yesterday", "", false, "Run a report for yesterday")
 	reportCmd.Flags().BoolP("thisweek", "", false, "Run a report for this week")
 	reportCmd.Flags().BoolP("lastweek", "", false, "Run a report for last week")
-
-	//	reportCmd.MarkFlagRequired("sd")
-	//	reportCmd.MarkFlagRequired("ed")
-
 }
 
 func initServices() {
@@ -160,7 +157,6 @@ func getDateRange(cmd *cobra.Command) (time.Time, time.Time) {
 	}
 
 	if lastweek {
-		// TODO: get logic from the gt-at package
 		thisSunday := sundayOfTheWeek(time.Now())
 		lastSunday := thisSunday.AddDate(0, 0, -7)
 		sd := time.Date(lastSunday.Year(), lastSunday.Month(), lastSunday.Day(), 0, 0, 0, 0, lastSunday.Location())
