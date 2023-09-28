@@ -11,6 +11,8 @@ import (
 )
 
 var reportService toggl.ReportService
+var textOutput string
+var jsonOutput string
 
 // gtdCmd represents the action command
 var reportCmd = &cobra.Command{
@@ -21,45 +23,39 @@ var reportCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		sd, ed := getDateRange(cmd)
 
-		// print the date range
-		fmt.Printf("Start Date: %s\n", sd)
-		fmt.Printf("End Date: %s\n", ed)
-
 		rpt, err := reportService.BuildReport(sd, ed)
-		if err != nil {
-			cobra.CheckErr(err)
-		}
+		cobra.CheckErr(err)
 
-		console, err := (cmd.Flags().GetBool("console"))
-		if err != nil {
-			cobra.CheckErr(err)
-		}
+		textReport, err := (cmd.Flags().GetBool("text"))
+		cobra.CheckErr(err)
 
-		if console {
+		if textReport || textOutput != "" {
 			r, err := reportService.BuildStringReport(rpt)
-			if err != nil {
-				cobra.CheckErr(err)
-			}
-			fmt.Println(*r)
-		}
-
-		json, err := (cmd.Flags().GetBool("json"))
-		if err != nil {
 			cobra.CheckErr(err)
+
+			if textReport {
+				fmt.Println(*r)
+			}
+
+			if textOutput != "" {
+				os.WriteFile(textOutput, []byte(*r), 0644)
+			}
 		}
 
-		if json {
-			jsonOutput, err := cmd.Flags().GetString("jsonOutput")
-			if err != nil {
-				cobra.CheckErr(err)
-			}
+		jsonReport, err := (cmd.Flags().GetBool("json"))
+		cobra.CheckErr(err)
 
+		if jsonReport || jsonOutput != "" {
 			jsonBytes, err := reportService.BuildJsonReport(rpt)
-			if err != nil {
-				cobra.CheckErr(err)
+			cobra.CheckErr(err)
+
+			if jsonReport {
+				fmt.Println(string(*jsonBytes))
 			}
 
-			os.WriteFile(jsonOutput, *jsonBytes, 0644)
+			if jsonOutput != "" {
+				os.WriteFile(jsonOutput, *jsonBytes, 0644)
+			}
 		}
 	},
 }
@@ -68,13 +64,16 @@ func init() {
 	cobra.OnInitialize(initServices)
 	togglcmd.TogglCmd.AddCommand(reportCmd)
 
-	reportCmd.Flags().StringP("sd", "s", "", "Start date")
-	reportCmd.Flags().StringP("ed", "e", "", "End date")
+	reportCmd.Flags().StringP("startDate", "s", "", "Start date")
+	reportCmd.Flags().StringP("endDate", "e", "", "End date")
 
-	reportCmd.Flags().BoolP("console", "c", false, "Console Report")
-	reportCmd.Flags().BoolP("json", "j", false, "JSON Report")
+	reportCmd.Flags().BoolP("text", "t", false, "Produces a text report")
+	reportCmd.Flags().BoolP("json", "j", false, "Produces a JSON report")
 
-	reportCmd.Flags().StringP("jsonOutput", "o", "/tmp/time.json", "JSON output file")
+	reportCmd.Flags().StringVarP(&textOutput, "ot", "", "", "Writes a text report file.")
+	reportCmd.Flags().Lookup("ot").NoOptDefVal = "/tmp/time.txt"
+
+	reportCmd.Flags().StringVarP(&jsonOutput, "oj", "", "", "Writes a JSON report file.")
 
 	reportCmd.Flags().BoolP("today", "", false, "Run a report for today")
 	reportCmd.Flags().BoolP("eyesterday", "", false, "Run a report for eyesterday")
@@ -170,12 +169,12 @@ func getDateRange(cmd *cobra.Command) (time.Time, time.Time) {
 		return sd, ed
 	}
 
-	sdStr, err := cmd.Flags().GetString("sd")
+	sdStr, err := cmd.Flags().GetString("startDate")
 	if err != nil {
 		cobra.CheckErr(err)
 	}
 
-	edStr, err := cmd.Flags().GetString("ed")
+	edStr, err := cmd.Flags().GetString("endDate")
 	if err != nil {
 		cobra.CheckErr(err)
 	}
