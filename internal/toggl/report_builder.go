@@ -11,6 +11,10 @@ type ReportBuilder struct {
 	projectService ProjectService
 }
 
+const (
+	MIN_TIME_ENTRY_DURATION = 60 // seconds
+)
+
 func NewReportBuilder(timeService TimeService, projectService ProjectService) ReportBuilder {
 	return ReportBuilder{
 		timeService:    timeService,
@@ -30,6 +34,9 @@ func (r *ReportBuilder) BuildReport(sd, ed time.Time) (*Report, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Remove all insignificant entries
+	timeEntries = r.removeInsignificantEntries(timeEntries)
 
 	// Validate that all entries have a project
 	for _, entry := range timeEntries {
@@ -126,4 +133,14 @@ func (r *ReportBuilder) BuildReport(sd, ed time.Time) (*Report, error) {
 	}
 
 	return rpt, nil
+}
+
+func (r *ReportBuilder) removeInsignificantEntries(entries TogglTimeEntries) TogglTimeEntries {
+	var result TogglTimeEntries
+	for _, entry := range entries {
+		if entry.Duration >= MIN_TIME_ENTRY_DURATION {
+			result = append(result, entry)
+		}
+	}
+	return result
 }
