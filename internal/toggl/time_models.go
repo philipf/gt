@@ -4,6 +4,7 @@ import "time"
 
 type TogglTimeEntries []*TogglTimeEntry
 
+// Online documentation: https://developers.track.toggl.com/docs/api/time_entries/index.html#response-1
 type TogglTimeEntry struct {
 	ID              int64       `json:"id"`
 	WorkspaceID     int64       `json:"workspace_id"`
@@ -12,7 +13,7 @@ type TogglTimeEntry struct {
 	Billable        bool        `json:"billable"`
 	Start           time.Time   `json:"start"`
 	Stop            time.Time   `json:"stop"`
-	Duration        int64       `json:"duration"`
+	Duration        int64       `json:"duration"` // in seconds, running entries contain a negative duration
 	Description     string      `json:"description"`
 	ServerDeletedAt interface{} `json:"server_deleted_at"`
 
