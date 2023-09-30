@@ -3,7 +3,7 @@ package toggl
 type GetProjectsOpts struct {
 	Name            string
 	IncludeArchived bool
-	ClientIDs       []int64
+	ClientID        int64
 }
 
 type ProjectTitle struct {

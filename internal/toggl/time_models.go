@@ -2,6 +2,11 @@ package toggl
 
 import "time"
 
+type GetTimeOpts struct {
+	Start time.Time
+	End   time.Time
+}
+
 type TogglTimeEntries []*TogglTimeEntry
 
 // Online documentation: https://developers.track.toggl.com/docs/api/time_entries/index.html#response-1

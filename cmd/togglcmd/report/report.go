@@ -28,7 +28,10 @@ var reportCmd = &cobra.Command{
 		textReport, err := (cmd.Flags().GetBool("text"))
 		cobra.CheckErr(err)
 
-		if textReport || textOutput != "" {
+		jsonReport, err := (cmd.Flags().GetBool("json"))
+		cobra.CheckErr(err)
+
+		if textReport || textOutput != "" || (!textReport && !jsonReport) {
 			r, err := reportService.BuildStringReport(rpt)
 			cobra.CheckErr(err)
 
@@ -40,9 +43,6 @@ var reportCmd = &cobra.Command{
 				os.WriteFile(textOutput, []byte(*r), 0644)
 			}
 		}
-
-		jsonReport, err := (cmd.Flags().GetBool("json"))
-		cobra.CheckErr(err)
 
 		if jsonReport || jsonOutput != "" {
 			jsonBytes, err := reportService.BuildJsonReport(rpt)

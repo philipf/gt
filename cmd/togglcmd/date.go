@@ -14,10 +14,7 @@ func GetDateRange(cmd *cobra.Command) (time.Time, time.Time) {
 	now := time.Now()
 
 	if today {
-		// Set the start date to today, trimming the time
-		sd := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-		// Set the end date to tomorrow, trimming the time and subtracting a second
-		ed := sd.AddDate(0, 0, 1).Add(-time.Second)
+		sd, ed := getTodayDates()
 		return sd, ed
 	}
 
@@ -80,6 +77,12 @@ func GetDateRange(cmd *cobra.Command) (time.Time, time.Time) {
 	edStr, err := cmd.Flags().GetString("endDate")
 	cobra.CheckErr(err)
 
+	// if no start and end dates are provided, default to today
+	if sdStr == "" && edStr == "" {
+		sd, ed := getTodayDates()
+		return sd, ed
+	}
+
 	loc, err := time.LoadLocation("Local")
 	cobra.CheckErr(err)
 
@@ -100,4 +103,13 @@ func sundayOfTheWeek(t time.Time) time.Time {
 	// Since Sunday = 0 in time.Weekday, it gives the exact offset we need.
 	offset := int(t.Weekday())
 	return t.AddDate(0, 0, -offset)
+}
+
+func getTodayDates() (time.Time, time.Time) {
+	now := time.Now()
+	// Set the start date to today, trimming the time
+	sd := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	// Set the end date to tomorrow, trimming the time and subtracting a second
+	ed := sd.AddDate(0, 0, 1).Add(-time.Second)
+	return sd, ed
 }

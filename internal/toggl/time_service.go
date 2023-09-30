@@ -46,7 +46,7 @@ func (t *TimeService) Get(start, end time.Time) (TogglTimeEntries, error) {
 	}()
 
 	go func() {
-		clients, err := t.clientService.Get("")
+		clients, err := t.clientService.Get(nil)
 		chClients <- clientResult{clients, err}
 	}()
 

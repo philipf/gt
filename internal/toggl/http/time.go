@@ -7,8 +7,11 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"path"
 	"time"
 
+	"github.com/philipf/gt/internal/cache"
+	"github.com/philipf/gt/internal/settings"
 	"github.com/philipf/gt/internal/toggl"
 	"github.com/spf13/viper"
 )
@@ -17,6 +20,43 @@ type TogglTimeEntriesGateway struct {
 }
 
 func (t *TogglTimeEntriesGateway) Get(start, end time.Time) (toggl.TogglTimeEntries, error) {
+	cache := cache.JsonFileCache[toggl.TogglTimeEntries, toggl.GetTimeOpts]{}
+
+	cacheDir, err := settings.GetGtConfigPath()
+	if err != nil {
+		return nil, err
+	}
+
+	cacheFilePath := path.Join(cacheDir, "toggl-time-entries.json")
+	cacheMaxAge := time.Duration(time.Minute * 2)
+
+	filter := &toggl.GetTimeOpts{
+		Start: start,
+		End:   end,
+	}
+
+	cr, err := cache.Get(*filter, cacheFilePath, cacheMaxAge)
+
+	if err != nil {
+		log.Println("Cache miss")
+	} else {
+		log.Println("Cache hit")
+		return *cr, nil
+	}
+
+	r, err := t.getFromToggl(filter.Start, filter.End)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cache.Save(*filter, cacheFilePath, &r, cacheMaxAge)
+	if err != nil {
+		return nil, err
+	}
+
+	return r, nil
+}
+func (t *TogglTimeEntriesGateway) getFromToggl(start, end time.Time) (toggl.TogglTimeEntries, error) {
 	uri, err := getTimeEntriesUri()
 	if err != nil {
 		return nil, err

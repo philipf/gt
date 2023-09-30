@@ -6,8 +6,12 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"path"
 	"sort"
+	"time"
 
+	"github.com/philipf/gt/internal/cache"
+	"github.com/philipf/gt/internal/settings"
 	"github.com/philipf/gt/internal/toggl"
 	"github.com/spf13/viper"
 )
@@ -15,7 +19,44 @@ import (
 type TogglClientGateway struct {
 }
 
-func (t *TogglClientGateway) Get(filter string) (toggl.TogglClients, error) {
+func (t *TogglClientGateway) Get(filter *toggl.GetClientOpts) (toggl.TogglClients, error) {
+	cache := cache.JsonFileCache[toggl.TogglClients, toggl.GetClientOpts]{}
+
+	cacheDir, err := settings.GetGtConfigPath()
+	if err != nil {
+		return nil, err
+	}
+
+	cacheFilePath := path.Join(cacheDir, "toggl-clients.json")
+	cacheMaxAge := time.Duration(time.Minute * 5)
+
+	if filter == nil {
+		filter = &toggl.GetClientOpts{}
+	}
+
+	cr, err := cache.Get(*filter, cacheFilePath, cacheMaxAge)
+
+	if err != nil {
+		log.Println("Cache miss")
+	} else {
+		log.Println("Cache hit")
+		return *cr, nil
+	}
+
+	r, err := t.getFromToggl(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cache.Save(*filter, cacheFilePath, &r, cacheMaxAge)
+	if err != nil {
+		return nil, err
+	}
+
+	return r, nil
+}
+
+func (t *TogglClientGateway) getFromToggl(filter *toggl.GetClientOpts) (toggl.TogglClients, error) {
 	uri, err := getApiClientsListUri()
 	if err != nil {
 		return nil, err
@@ -26,9 +67,9 @@ func (t *TogglClientGateway) Get(filter string) (toggl.TogglClients, error) {
 		return nil, err
 	}
 
-	if filter != "" {
+	if filter != nil {
 		q := u.Query()
-		q.Add("name", filter)
+		q.Add("name", filter.Name)
 		u.RawQuery = q.Encode()
 	}
 

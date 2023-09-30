@@ -2,6 +2,10 @@ package toggl
 
 type TogglClients []*TogglClientElement
 
+type GetClientOpts struct {
+	Name string
+}
+
 type TogglClientElement struct {
 	ID       int64  `json:"id"`
 	Wid      int64  `json:"wid"`

@@ -4,7 +4,7 @@ type ClientService struct {
 	ClientGateway ClientGateway
 }
 
-func (c *ClientService) Get(filter string) (TogglClients, error) {
+func (c *ClientService) Get(filter *GetClientOpts) (TogglClients, error) {
 	gw := c.ClientGateway
 	return gw.Get(filter)
 }

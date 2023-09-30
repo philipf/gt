@@ -29,7 +29,7 @@ gt toggl project list
 
 		filter := toggl.GetProjectsOpts{
 			IncludeArchived: includeArchived,
-			ClientIDs:       []int64{clientId},
+			ClientID:        clientId,
 			Name:            name,
 		}
 

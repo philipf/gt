@@ -8,7 +8,11 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"path"
+	"time"
 
+	"github.com/philipf/gt/internal/cache"
+	"github.com/philipf/gt/internal/settings"
 	"github.com/philipf/gt/internal/toggl"
 	"github.com/spf13/viper"
 )
@@ -24,6 +28,43 @@ type TogglProjectGateway struct {
 }
 
 func (t *TogglProjectGateway) Get(filter *toggl.GetProjectsOpts) (toggl.TogglProjects, error) {
+	cache := cache.JsonFileCache[toggl.TogglProjects, toggl.GetProjectsOpts]{}
+
+	cacheDir, err := settings.GetGtConfigPath()
+	if err != nil {
+		return nil, err
+	}
+
+	cacheFilePath := path.Join(cacheDir, "toggl-projects.json")
+	cacheMaxAge := time.Duration(time.Minute * 5)
+
+	if filter == nil {
+		filter = &toggl.GetProjectsOpts{}
+	}
+
+	cr, err := cache.Get(*filter, cacheFilePath, cacheMaxAge)
+
+	if err != nil {
+		log.Println("Cache miss")
+	} else {
+		log.Println("Cache hit")
+		return *cr, nil
+	}
+
+	r, err := t.getFromToggl(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cache.Save(*filter, cacheFilePath, &r, cacheMaxAge)
+	if err != nil {
+		return nil, err
+	}
+
+	return r, nil
+}
+
+func (t *TogglProjectGateway) getFromToggl(filter *toggl.GetProjectsOpts) (toggl.TogglProjects, error) {
 	uri, err := getCreateProjectUri()
 	if err != nil {
 		return nil, err
@@ -46,12 +87,17 @@ func (t *TogglProjectGateway) Get(filter *toggl.GetProjectsOpts) (toggl.TogglPro
 			q.Add("name", filter.Name)
 		}
 
-		if len(filter.ClientIDs) > 0 {
-			for _, clientID := range filter.ClientIDs {
-				q.Add("client_ids", fmt.Sprintf("%d", clientID))
-			}
+		// if len(filter.ClientIDs) > 0 {
+		// 	for _, clientID := range filter.ClientIDs {
+		// 		q.Add("client_ids", fmt.Sprintf("%d", clientID))
+		// 	}
+		// }
+
+		if filter.ClientID != 0 {
+			q.Add("client_ids", fmt.Sprintf("%d", filter.ClientID))
 		}
 	}
+
 	u.RawQuery = q.Encode()
 	log.Println("URI:", u.String())
 

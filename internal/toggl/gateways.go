@@ -15,5 +15,5 @@ type TimeEntryGateway interface {
 }
 
 type ClientGateway interface {
-	Get(filter string) (TogglClients, error)
+	Get(filter *GetClientOpts) (TogglClients, error)
 }
