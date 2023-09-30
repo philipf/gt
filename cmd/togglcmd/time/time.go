@@ -24,7 +24,7 @@ var timeCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		sd, ed := togglcmd.GetDateRange(cmd)
 
-		entries, err := timeService.GetTimeEntries(sd, ed)
+		entries, err := timeService.Get(sd, ed)
 		cobra.CheckErr(err)
 
 		sort.Slice(entries, func(i, j int) bool {

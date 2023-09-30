@@ -15,7 +15,7 @@ type FileClientGateway struct {
 
 const filename = "toggl-clients.json"
 
-func (f *FileClientGateway) GetClients(filter string) (toggl.TogglClients, error) {
+func (f *FileClientGateway) Get(filter string) (toggl.TogglClients, error) {
 	d, err := settings.GetGtConfigPath()
 	if err != nil {
 		return nil, err

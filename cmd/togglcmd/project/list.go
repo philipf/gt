@@ -18,9 +18,22 @@ gt toggl project list
 `,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		//filter, _ := cmd.Flags().GetString("filter")
+		includeArchived, err := cmd.Flags().GetBool("includeArchived")
+		cobra.CheckErr(err)
 
-		items, err := projectService.GetProjects(nil)
+		clientId, err := cmd.Flags().GetInt64("clientId")
+		cobra.CheckErr(err)
+
+		name, err := cmd.Flags().GetString("name")
+		cobra.CheckErr(err)
+
+		filter := toggl.GetProjectsOpts{
+			IncludeArchived: includeArchived,
+			ClientIDs:       []int64{clientId},
+			Name:            name,
+		}
+
+		items, err := projectService.Get(&filter)
 		cobra.CheckErr(err)
 
 		validate, err := cmd.Flags().GetBool("validate")
@@ -37,7 +50,7 @@ gt toggl project list
 
 		for _, i := range items {
 			// only print the projects that don't match the naming convention
-			if !projectService.ValidProjectName(i.Name) {
+			if !projectService.HasValidName(i.Name) {
 				invalidProjects = append(invalidProjects, i)
 			}
 		}
@@ -52,7 +65,6 @@ gt toggl project list
 				fmt.Printf("%d - %s\n", i.ID, i.Name)
 			}
 		}
-
 	},
 }
 
@@ -61,4 +73,7 @@ func init() {
 
 	// filter
 	listCmd.Flags().Bool("validate", false, "Validate projects matches the naming convention")
+	listCmd.Flags().Bool("includeArchived", false, "Include archived projects")
+	listCmd.Flags().Int64P("clientId", "c", 0, "Filter by client ID")
+	listCmd.Flags().StringP("name", "n", "", "Filter by project name")
 }

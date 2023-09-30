@@ -24,7 +24,7 @@ func NewReportBuilder(timeService TimeService, projectService ProjectService) Re
 
 func (r *ReportBuilder) BuildReport(sd, ed time.Time) (*Report, error) {
 
-	timeEntries, err := r.timeService.GetTimeEntries(sd, ed)
+	timeEntries, err := r.timeService.Get(sd, ed)
 	if err != nil {
 		return nil, err
 	}

@@ -1,8 +1,9 @@
 package toggl
 
 type GetProjectsOpts struct {
-	Name string
-	//Active bool
+	Name            string
+	IncludeArchived bool
+	ClientIDs       []int64
 }
 
 type ProjectTitle struct {
@@ -12,6 +13,7 @@ type ProjectTitle struct {
 	TaskID   int
 	TicketID string
 }
+
 type TogglProjects []*TogglProjectElement
 
 type TogglProjectElement struct {

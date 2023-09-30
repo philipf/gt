@@ -34,24 +34,24 @@ type timeEntriesResult struct {
 	err         error
 }
 
-func (t *TimeService) GetTimeEntries(start, end time.Time) (TogglTimeEntries, error) {
+func (t *TimeService) Get(start, end time.Time) (TogglTimeEntries, error) {
 	chTimeEntries := make(chan timeEntriesResult)
 	chClients := make(chan clientResult)
 	chProjects := make(chan projectResult)
 
 	// Fetch time entries, clients and projects in parallel
 	go func() {
-		entries, err := t.timeEntryGateway.GetTimeEntries(start, end)
+		entries, err := t.timeEntryGateway.Get(start, end)
 		chTimeEntries <- timeEntriesResult{entries, err}
 	}()
 
 	go func() {
-		clients, err := t.clientService.GetClients("")
+		clients, err := t.clientService.Get("")
 		chClients <- clientResult{clients, err}
 	}()
 
 	go func() {
-		projects, err := t.projectService.GetProjects(nil)
+		projects, err := t.projectService.Get(nil)
 		chProjects <- projectResult{projects, err}
 	}()
 
@@ -104,5 +104,10 @@ func (t *TimeService) includeProjectAndClient(timeEntries TogglTimeEntries, clie
 		}
 	}
 
+	return nil
+}
+
+func (t *TimeService) Add(entry *TogglTimeEntry) error {
+	//return t.timeEntryGateway.Add(entry)
 	return nil
 }

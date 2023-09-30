@@ -23,7 +23,7 @@ type CreateProjectRequest struct {
 type TogglProjectGateway struct {
 }
 
-func (t *TogglProjectGateway) GetProjects(filter *toggl.GetProjectsOpts) (toggl.TogglProjects, error) {
+func (t *TogglProjectGateway) Get(filter *toggl.GetProjectsOpts) (toggl.TogglProjects, error) {
 	uri, err := getCreateProjectUri()
 	if err != nil {
 		return nil, err
@@ -33,16 +33,26 @@ func (t *TogglProjectGateway) GetProjects(filter *toggl.GetProjectsOpts) (toggl.
 	if err != nil {
 		return nil, err
 	}
+
 	q := u.Query()
-	if filter != nil {
+	if filter == nil {
+		q.Add("active", "true")
+	} else {
+		if !filter.IncludeArchived {
+			q.Add("active", "true")
+		}
+
 		if filter.Name != "" {
 			q.Add("name", filter.Name)
 		}
+
+		if len(filter.ClientIDs) > 0 {
+			for _, clientID := range filter.ClientIDs {
+				q.Add("client_ids", fmt.Sprintf("%d", clientID))
+			}
+		}
 	}
-
-	q.Add("active", "true")
 	u.RawQuery = q.Encode()
-
 	log.Println("URI:", u.String())
 
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
@@ -76,7 +86,7 @@ func (t *TogglProjectGateway) GetProjects(filter *toggl.GetProjectsOpts) (toggl.
 	return projects, nil
 }
 
-func (t *TogglProjectGateway) CreateProject(projectName string, clientID int64) error {
+func (t *TogglProjectGateway) Create(projectName string, clientID int64) error {
 	uri, err := getCreateProjectUri()
 	if err != nil {
 		return err

@@ -4,9 +4,9 @@ type ClientService struct {
 	ClientGateway ClientGateway
 }
 
-func (c *ClientService) GetClients(filter string) (TogglClients, error) {
+func (c *ClientService) Get(filter string) (TogglClients, error) {
 	gw := c.ClientGateway
-	return gw.GetClients(filter)
+	return gw.Get(filter)
 }
 
 func NewClientService(clientGateway ClientGateway) ClientService {

@@ -15,7 +15,7 @@ import (
 type TogglTimeEntriesGateway struct {
 }
 
-func (t *TogglTimeEntriesGateway) GetTimeEntries(start, end time.Time) (toggl.TogglTimeEntries, error) {
+func (t *TogglTimeEntriesGateway) Get(start, end time.Time) (toggl.TogglTimeEntries, error) {
 	uri, err := getTimeEntriesUri()
 	if err != nil {
 		return nil, err

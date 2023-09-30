@@ -20,13 +20,13 @@ func NewProjectService(projectGateway ProjectGateway) ProjectService {
 	return s
 }
 
-func (p *ProjectService) CreateProject(projectName string, clientID int64) error {
-	return p.ProjectGateway.CreateProject(projectName, clientID)
+func (p *ProjectService) Create(projectName string, clientID int64) error {
+	return p.ProjectGateway.Create(projectName, clientID)
 
 }
 
-func (p *ProjectService) GetProjects(filter *GetProjectsOpts) (TogglProjects, error) {
-	projects, err := p.ProjectGateway.GetProjects(filter)
+func (p *ProjectService) Get(filter *GetProjectsOpts) (TogglProjects, error) {
+	projects, err := p.ProjectGateway.Get(filter)
 	if err != nil {
 		return TogglProjects{}, err
 	}
@@ -60,6 +60,6 @@ func (p *ProjectService) ParseProjectTitle(project string) (ProjectTitle, error)
 	}, nil
 }
 
-func (p *ProjectService) ValidProjectName(name string) bool {
+func (p *ProjectService) HasValidName(name string) bool {
 	return projectTileRegEx.MatchString(name)
 }

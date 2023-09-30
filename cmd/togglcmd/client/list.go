@@ -17,7 +17,7 @@ gt toggl client list
 
 	Run: func(cmd *cobra.Command, args []string) {
 		filter, _ := cmd.Flags().GetString("filter")
-		items, err := clientService.GetClients(filter)
+		items, err := clientService.Get(filter)
 		cobra.CheckErr(err)
 
 		for _, i := range items {

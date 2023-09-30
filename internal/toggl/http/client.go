@@ -15,7 +15,7 @@ import (
 type TogglClientGateway struct {
 }
 
-func (t *TogglClientGateway) GetClients(filter string) (toggl.TogglClients, error) {
+func (t *TogglClientGateway) Get(filter string) (toggl.TogglClients, error) {
 	uri, err := getApiClientsListUri()
 	if err != nil {
 		return nil, err

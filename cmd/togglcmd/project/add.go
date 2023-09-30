@@ -50,7 +50,7 @@ func doInteractive(cmd *cobra.Command) {
 	clientFilter += "%|" + projectType
 
 	fmt.Printf("Searching for clients with filter: %s\n", clientFilter)
-	clients, err := clientService.GetClients(clientFilter)
+	clients, err := clientService.Get(clientFilter)
 	cobra.CheckErr(err)
 
 	var clientID int64 = 0
@@ -114,7 +114,7 @@ func doInteractive(cmd *cobra.Command) {
 
 	confirm = strings.ToUpper(confirm)
 	if confirm == "Y" {
-		err = projectService.CreateProject(projectName, clientID)
+		err = projectService.Create(projectName, clientID)
 		cobra.CheckErr(err)
 		fmt.Println("Project created successfully")
 	} else {
@@ -136,7 +136,7 @@ func addProject(cmd *cobra.Command) {
 		return
 	}
 
-	err := projectService.CreateProject(name, clientID)
+	err := projectService.Create(name, clientID)
 	cobra.CheckErr(err)
 }
 

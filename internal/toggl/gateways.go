@@ -5,22 +5,14 @@ import (
 )
 
 type ProjectGateway interface {
-	GetProjects(filter *GetProjectsOpts) (TogglProjects, error)
-	CreateProject(projectName string, clientID int64) error
+	Get(filter *GetProjectsOpts) (TogglProjects, error)
+	Create(projectName string, clientID int64) error
 }
 
 type TimeEntryGateway interface {
-	GetTimeEntries(start, end time.Time) (TogglTimeEntries, error)
+	Get(start, end time.Time) (TogglTimeEntries, error)
 }
 
 type ClientGateway interface {
-	GetClients(filter string) (TogglClients, error)
+	Get(filter string) (TogglClients, error)
 }
-
-// func NewTogglClientGateway() ClientGateway {
-// 	return &gateways.TogglClientGateway{}
-// }
-
-// func NewFileClientGateway() ClientGateway {
-// 	return &gateways.FileClientGateway{}
-// }
