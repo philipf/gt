@@ -46,10 +46,6 @@ func getApiClientsListUri() (string, error) {
 }
 
 func getTimeEntriesUri() (string, error) {
-	//workspaceID, err := getWorkspaceID()
-	// if err != nil {
-	// 	return "", err
-	// }
 	uri := fmt.Sprintf(UriTimeEntries, UriBase)
 	return uri, nil
 }

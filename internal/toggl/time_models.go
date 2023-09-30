@@ -17,8 +17,23 @@ type TogglTimeEntry struct {
 	Description     string      `json:"description"`
 	ServerDeletedAt interface{} `json:"server_deleted_at"`
 
-	// Fields populated by IncludeMissingV9Fields
+	// derived fields
 	Client   string
 	ClientID int64
 	Project  string
+}
+
+// https://developers.track.toggl.com/docs/api/time_entries#post-timeentries
+type NewTogglTimeEntry struct {
+	Billable    bool     `json:"billable,omitempty"`    // Whether the time entry is marked as billable. Optional, default false.
+	CreatedWith string   `json:"created_with"`          // Must be provided when creating a time entry and should identify the service/application used to create it.
+	Description string   `json:"description,omitempty"` // Time entry description. Optional.
+	Duration    int      `json:"duration"`              // Time entry duration. For running entries should be negative, preferable -1.
+	ProjectID   int      `json:"project_id,omitempty"`  // Project ID. Optional.
+	Start       string   `json:"start"`                 // Start time in UTC, required for creation. Format: 2006-01-02T15:04:05Z.
+	Stop        string   `json:"stop,omitempty"`        // Stop time in UTC, can be omitted if it's still running or created with "duration". If "stop" and "duration" are provided, values must be consistent (start + duration == stop).
+	TagAction   string   `json:"tag_action,omitempty"`  // Can be "add" or "delete". Used when updating an existing time entry.
+	TagIDs      []int    `json:"tag_ids,omitempty"`     // IDs of tags to add/remove.
+	Tags        []string `json:"tags,omitempty"`        // Names of tags to add/remove. If name does not exist as tag, one will be created automatically.
+	WorkspaceID int      `json:"workspace_id"`          // Workspace ID. Required.
 }

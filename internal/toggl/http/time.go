@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -71,4 +72,54 @@ func (t *TogglTimeEntriesGateway) Get(start, end time.Time) (toggl.TogglTimeEntr
 	}
 
 	return timeEntries, nil
+}
+
+func (t *TogglTimeEntriesGateway) Add(timeEntry *toggl.NewTogglTimeEntry) error {
+	uri, err := getTimeEntriesUri()
+	if err != nil {
+		return err
+	}
+
+	u, err := url.Parse(uri)
+	if err != nil {
+		return err
+	}
+
+	q := u.Query()
+	u.RawQuery = q.Encode()
+
+	client := &http.Client{}
+	payload, err := json.Marshal(timeEntry)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, u.String(), bytes.NewBuffer(payload))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.SetBasicAuth(viper.GetString("toggl.ApiKey"), "api_token")
+
+	log.Println("URI:", u.String())
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("invalid status: %s", resp.Status)
+	}
+
+	var timeEntries toggl.TogglTimeEntries
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(&timeEntries)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
