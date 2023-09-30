@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -39,7 +40,7 @@ func (t *TogglTimeEntriesGateway) GetTimeEntries(start, end time.Time) (toggl.To
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.SetBasicAuth(viper.GetString("toggl.ApiKey"), "api_token")
 
-	fmt.Println("URI:", u.String())
+	log.Println("URI:", u.String())
 
 	resp, err := client.Do(req)
 	if err != nil {

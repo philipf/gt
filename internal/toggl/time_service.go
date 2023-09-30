@@ -18,31 +18,67 @@ func NewTimeService(timeEntryGateway TimeEntryGateway, clientService ClientServi
 	}
 }
 
-func (t *TimeService) GetTimeEntries(start, end time.Time) (TogglTimeEntries, error) {
-	entries, err := t.timeEntryGateway.GetTimeEntries(start, end)
-	if err != nil {
-		return nil, err
-	}
-
-	err = t.includeProjectAndClient(entries)
-	if err != nil {
-		return nil, err
-	}
-
-	return entries, nil
+// Channel defintions for goroutines in GetTimeEntries
+type clientResult struct {
+	clients TogglClients
+	err     error
 }
 
-func (t *TimeService) includeProjectAndClient(timeEntries TogglTimeEntries) error {
-	projects, err := t.projectService.GetProjects(nil)
-	if err != nil {
-		return err
+type projectResult struct {
+	projects TogglProjects
+	err      error
+}
+
+type timeEntriesResult struct {
+	timeEntries TogglTimeEntries
+	err         error
+}
+
+func (t *TimeService) GetTimeEntries(start, end time.Time) (TogglTimeEntries, error) {
+	chTimeEntries := make(chan timeEntriesResult)
+	chClients := make(chan clientResult)
+	chProjects := make(chan projectResult)
+
+	// Fetch time entries, clients and projects in parallel
+	go func() {
+		entries, err := t.timeEntryGateway.GetTimeEntries(start, end)
+		chTimeEntries <- timeEntriesResult{entries, err}
+	}()
+
+	go func() {
+		clients, err := t.clientService.GetClients("")
+		chClients <- clientResult{clients, err}
+	}()
+
+	go func() {
+		projects, err := t.projectService.GetProjects(nil)
+		chProjects <- projectResult{projects, err}
+	}()
+
+	timeEntriesResult := <-chTimeEntries
+	if timeEntriesResult.err != nil {
+		return nil, timeEntriesResult.err
 	}
 
-	clients, err := t.clientService.GetClients("")
-	if err != nil {
-		return err
+	clientsResult := <-chClients
+	if clientsResult.err != nil {
+		return nil, clientsResult.err
 	}
 
+	projectsResult := <-chProjects
+	if projectsResult.err != nil {
+		return nil, projectsResult.err
+	}
+
+	err := t.includeProjectAndClient(timeEntriesResult.timeEntries, clientsResult.clients, projectsResult.projects)
+	if err != nil {
+		return nil, err
+	}
+
+	return timeEntriesResult.timeEntries, nil
+}
+
+func (t *TimeService) includeProjectAndClient(timeEntries TogglTimeEntries, clients TogglClients, projects TogglProjects) error {
 	// Convert projects and clients to maps for easy lookup
 	projectMap := make(map[int64]*TogglProjectElement)
 	clientMap := make(map[int64]*TogglClientElement)
