@@ -2,6 +2,8 @@ package toggl
 
 import (
 	"fmt"
+	"log"
+	"sort"
 	"time"
 )
 
@@ -108,8 +110,47 @@ func (t *TimeService) includeProjectAndClient(timeEntries TogglTimeEntries, clie
 	return nil
 }
 
-func (t *TimeService) Add(entry *TogglTimeEntry) error {
-	//return t.timeEntryGateway.Add(entry)
+func (t *TimeService) Add(entry *NewTogglTimeEntry) error {
+	return t.timeEntryGateway.Add(entry)
+}
+
+func (t *TimeService) ResumeLast() error {
+	n := time.Now()
+	sd := time.Date(n.Year(), n.Month(), n.Day(), 0, 0, 0, 0, time.Local)
+	ed := sd.AddDate(0, 0, 1).Add(-time.Second)
+	entries, err := t.timeEntryGateway.Get(sd, ed)
+	if err != nil {
+		return err
+	}
+
+	if len(entries) == 0 {
+		return fmt.Errorf("nothing to resume, no time entries for today")
+	}
+
+	log.Println("Found", len(entries), "entries for today")
+
+	// sort entries by start time
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].Start.After(entries[j].Start)
+	})
+
+	lastEntry := entries[0]
+
+	newEntry := NewTogglTimeEntry{
+		Description: lastEntry.Description,
+		ProjectID:   lastEntry.ProjectID,
+		WorkspaceID: lastEntry.WorkspaceID,
+		CreatedWith: "gt",
+		Start:       time.Now().Format(time.RFC3339),
+		Stop:        "", // empty stop time means the entry is still running
+		Duration:    -1,
+	}
+
+	err = t.timeEntryGateway.Add(&newEntry)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

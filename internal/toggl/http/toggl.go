@@ -8,11 +8,12 @@ import (
 )
 
 const (
-	UriBase            = "https://api.track.toggl.com/api/v9"
-	UriClients         = "%s/workspaces/%s/clients"
-	UriTimeEntries     = "%s/me/time_entries"
-	UriTimeEntriesStop = "%s/workspaces/%s/time_entries/%d/stop"
-	UriProject         = "%s/workspaces/%s/projects"
+	UriBase                 = "https://api.track.toggl.com/api/v9"
+	UriClients              = "%s/workspaces/%s/clients"
+	UriTimeEntries          = "%s/me/time_entries"
+	UriTimeEntriesWorkspace = "%s/workspaces/%s/time_entries"
+	UriTimeEntriesStop      = "%s/workspaces/%s/time_entries/%d/stop"
+	UriProject              = "%s/workspaces/%s/projects"
 )
 
 func getAPIToken() string {
@@ -42,6 +43,15 @@ func getApiClientsListUri() (string, error) {
 
 func getTimeEntriesUri() (string, error) {
 	uri := fmt.Sprintf(UriTimeEntries, UriBase)
+	return uri, nil
+}
+
+func getTimeEntriesWorkspaceUri() (string, error) {
+	workspaceID, err := getWorkspaceID()
+	if err != nil {
+		return "", err
+	}
+	uri := fmt.Sprintf(UriTimeEntriesWorkspace, UriBase, workspaceID)
 	return uri, nil
 }
 

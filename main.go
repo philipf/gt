@@ -12,6 +12,7 @@ import (
 	_ "github.com/philipf/gt/cmd/togglcmd/client"
 	_ "github.com/philipf/gt/cmd/togglcmd/project"
 	_ "github.com/philipf/gt/cmd/togglcmd/report"
+	_ "github.com/philipf/gt/cmd/togglcmd/resume"
 	_ "github.com/philipf/gt/cmd/togglcmd/stop"
 	_ "github.com/philipf/gt/cmd/togglcmd/time"
 )
