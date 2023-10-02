@@ -108,9 +108,8 @@ func (t *TimeService) includeProjectAndClient(timeEntries TogglTimeEntries, clie
 	return nil
 }
 
-func (t *TimeService) Add(entry *TogglTimeEntry) error {
-	//return t.timeEntryGateway.Add(entry)
-	return nil
+func (t *TimeService) Add(entry *NewTogglTimeEntry) error {
+	return t.timeEntryGateway.Add(entry)
 }
 
 func (t *TimeService) Stop() error {

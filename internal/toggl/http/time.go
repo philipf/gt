@@ -116,7 +116,7 @@ func (t *TogglTimeEntriesGateway) getFromToggl(start, end time.Time) (toggl.Togg
 }
 
 func (t *TogglTimeEntriesGateway) Add(timeEntry *toggl.NewTogglTimeEntry) error {
-	uri, err := getTimeEntriesUri()
+	uri, err := getTimeEntriesWorkspaceUri()
 	if err != nil {
 		return err
 	}
@@ -141,7 +141,7 @@ func (t *TogglTimeEntriesGateway) Add(timeEntry *toggl.NewTogglTimeEntry) error 
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-	req.SetBasicAuth(viper.GetString("toggl.ApiKey"), "api_token")
+	req.SetBasicAuth(getAPIToken(), "api_token")
 
 	log.Println("URI:", u.String())
 
