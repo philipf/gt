@@ -1,6 +1,7 @@
 package toggl
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -110,4 +111,18 @@ func (t *TimeService) includeProjectAndClient(timeEntries TogglTimeEntries, clie
 func (t *TimeService) Add(entry *TogglTimeEntry) error {
 	//return t.timeEntryGateway.Add(entry)
 	return nil
+}
+
+func (t *TimeService) Stop() error {
+	current, err := t.timeEntryGateway.GetCurrent()
+	if err != nil {
+		return err
+	}
+
+	if current == nil {
+		//nothing to stop
+		return fmt.Errorf("no running time entry to stop")
+	}
+
+	return t.timeEntryGateway.Stop(current.ID)
 }

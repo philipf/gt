@@ -8,18 +8,15 @@ import (
 )
 
 const (
-	UriBase        = "https://api.track.toggl.com/api/v9"
-	UriClients     = "%s/workspaces/%s/clients"
-	UriTimeEntries = "%s/me/time_entries"
-	UriProject     = "%s/workspaces/%s/projects"
+	UriBase            = "https://api.track.toggl.com/api/v9"
+	UriClients         = "%s/workspaces/%s/clients"
+	UriTimeEntries     = "%s/me/time_entries"
+	UriTimeEntriesStop = "%s/workspaces/%s/time_entries/%d/stop"
+	UriProject         = "%s/workspaces/%s/projects"
 )
 
 func getAPIToken() string {
 	r := viper.GetString("toggl.apiKey")
-
-	// if r == "" {
-	// 	return "", errors.New("No API token found")
-	// }
 
 	return r
 }
@@ -34,8 +31,6 @@ func getWorkspaceID() (string, error) {
 	return r, nil
 }
 
-//uri := fmt.Sprintf("%s/api/v9/workspaces/%s/clients", BASE_URI, getWorkspaceID())
-
 func getApiClientsListUri() (string, error) {
 	workspaceID, err := getWorkspaceID()
 	if err != nil {
@@ -47,6 +42,15 @@ func getApiClientsListUri() (string, error) {
 
 func getTimeEntriesUri() (string, error) {
 	uri := fmt.Sprintf(UriTimeEntries, UriBase)
+	return uri, nil
+}
+
+func getTimeEntriesStopUri(entryID int64) (string, error) {
+	workspaceID, err := getWorkspaceID()
+	if err != nil {
+		return "", err
+	}
+	uri := fmt.Sprintf(UriTimeEntriesStop, UriBase, workspaceID, entryID)
 	return uri, nil
 }
 

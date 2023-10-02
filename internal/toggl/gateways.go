@@ -12,6 +12,8 @@ type ProjectGateway interface {
 type TimeEntryGateway interface {
 	Get(start, end time.Time) (TogglTimeEntries, error)
 	Add(timeEntry *NewTogglTimeEntry) error
+	GetCurrent() (*TogglTimeEntry, error)
+	Stop(entryID int64) error
 }
 
 type ClientGateway interface {

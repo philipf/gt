@@ -56,6 +56,7 @@ func (t *TogglTimeEntriesGateway) Get(start, end time.Time) (toggl.TogglTimeEntr
 
 	return r, nil
 }
+
 func (t *TogglTimeEntriesGateway) getFromToggl(start, end time.Time) (toggl.TogglTimeEntries, error) {
 	uri, err := getTimeEntriesUri()
 	if err != nil {
@@ -159,6 +160,91 @@ func (t *TogglTimeEntriesGateway) Add(timeEntry *toggl.NewTogglTimeEntry) error 
 	err = decoder.Decode(&timeEntries)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (t *TogglTimeEntriesGateway) GetCurrent() (*toggl.TogglTimeEntry, error) {
+	uri, err := getTimeEntriesUri()
+	if err != nil {
+		return nil, err
+	}
+
+	uri += "/current"
+
+	u, err := url.Parse(uri)
+	if err != nil {
+		return nil, err
+	}
+
+	q := u.Query()
+	u.RawQuery = q.Encode()
+
+	client := &http.Client{}
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.SetBasicAuth(viper.GetString("toggl.ApiKey"), "api_token")
+
+	log.Println("URI:", u.String())
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("invalid status: %s", resp.Status)
+	}
+
+	var timeEntry toggl.TogglTimeEntry
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(&timeEntry)
+	if err != nil {
+		return nil, err
+	}
+
+	return &timeEntry, nil
+}
+
+func (t *TogglTimeEntriesGateway) Stop(entryID int64) error {
+	uri, err := getTimeEntriesStopUri(entryID)
+	if err != nil {
+		return err
+	}
+
+	u, err := url.Parse(uri)
+	if err != nil {
+		return err
+	}
+
+	q := u.Query()
+	u.RawQuery = q.Encode()
+
+	client := &http.Client{}
+	req, err := http.NewRequest(http.MethodPatch, u.String(), nil)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.SetBasicAuth(viper.GetString("toggl.ApiKey"), "api_token")
+
+	log.Println("URI:", u.String())
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("invalid status: %s", resp.Status)
 	}
 
 	return nil
