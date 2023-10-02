@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -20,6 +21,7 @@ type TogglTimeEntriesGateway struct {
 }
 
 func (t *TogglTimeEntriesGateway) Get(start, end time.Time) (toggl.TogglTimeEntries, error) {
+	log.Printf("Getting time entries from %s to %s\n", start, end)
 	cache := cache.JsonFileCache[toggl.TogglTimeEntries, toggl.GetTimeOpts]{}
 
 	cacheDir, err := settings.GetGtConfigPath()
@@ -94,6 +96,13 @@ func (t *TogglTimeEntriesGateway) getFromToggl(start, end time.Time) (toggl.Togg
 		return nil, fmt.Errorf("invalid status: %s", resp.Status)
 	}
 
+	// print response body
+	// body, err := io.ReadAll(resp.Body)
+	// if err != nil {
+	// return nil, err
+	// }
+	// fmt.Println(string(body))
+
 	var timeEntries toggl.TogglTimeEntries
 	decoder := json.NewDecoder(resp.Body)
 	err = decoder.Decode(&timeEntries)
@@ -151,17 +160,16 @@ func (t *TogglTimeEntriesGateway) Add(timeEntry *toggl.NewTogglTimeEntry) error 
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("invalid status: %s", resp.Status)
-	}
-
-	var timeEntries toggl.TogglTimeEntries
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(&timeEntries)
+	// print response body
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
+	fmt.Println(string(body))
 
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("invalid status: %s", resp.Status)
+	}
 	return nil
 }
 
