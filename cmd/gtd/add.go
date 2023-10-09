@@ -27,7 +27,7 @@ var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a new action to the inbox",
 	Long:  `Adds a new action and adds it to the Kanban board. If a description is provided, it will be added to the action as a note.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		var err error
 
 		if UseAi {

@@ -1,7 +1,10 @@
 package edit
 
 import (
+	"fmt"
+
 	"github.com/philipf/gt/cmd/togglcmd"
+	"github.com/philipf/gt/internal/console"
 	"github.com/philipf/gt/internal/toggl"
 	"github.com/spf13/cobra"
 )
@@ -18,11 +21,14 @@ var editCmd = &cobra.Command{
 		desc, err := cmd.Flags().GetString("description")
 		cobra.CheckErr(err)
 
-		if desc != "" {
-			err = timeService.EditDesc(desc)
-			if err != nil {
-				cobra.CheckErr(err)
-			}
+		if desc == "" {
+			desc, err = getUserInput("Description:")
+			cobra.CheckErr(err)
+		}
+
+		err = timeService.EditDesc(desc)
+		if err != nil {
+			cobra.CheckErr(err)
 		}
 	},
 }
@@ -36,4 +42,9 @@ func init() {
 
 func initServices() {
 	timeService = initialiseTimeService()
+}
+
+func getUserInput(prompt string) (string, error) {
+	fmt.Println(prompt)
+	return console.ReadLine()
 }
