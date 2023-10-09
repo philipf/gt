@@ -167,3 +167,19 @@ func (t *TimeService) Stop() error {
 
 	return t.timeEntryGateway.Stop(current.ID)
 }
+
+func (t *TimeService) EditDesc(desc string) error {
+	// Get the current time timeEntryGateway
+
+	current, err := t.timeEntryGateway.GetCurrent()
+	if err != nil {
+		return err
+	}
+
+	if current.ID == 0 {
+		//nothing to edit
+		return fmt.Errorf("no time entry to edit")
+	}
+
+	return t.timeEntryGateway.EditDesc(current.ID, desc)
+}

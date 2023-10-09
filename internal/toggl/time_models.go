@@ -42,3 +42,7 @@ type NewTogglTimeEntry struct {
 	Tags        []string `json:"tags,omitempty"`        // Names of tags to add/remove. If name does not exist as tag, one will be created automatically.
 	WorkspaceID int64    `json:"workspace_id"`          // Workspace ID. Required.
 }
+
+type UpdateTogglTimeEntryDesc struct {
+	Description string `json:"description"`
+}

@@ -10,6 +10,7 @@ import (
 	_ "github.com/philipf/gt/cmd/gtd"
 	_ "github.com/philipf/gt/cmd/togglcmd"
 	_ "github.com/philipf/gt/cmd/togglcmd/client"
+	_ "github.com/philipf/gt/cmd/togglcmd/edit"
 	_ "github.com/philipf/gt/cmd/togglcmd/project"
 	_ "github.com/philipf/gt/cmd/togglcmd/report"
 	_ "github.com/philipf/gt/cmd/togglcmd/resume"

@@ -12,6 +12,7 @@ const (
 	UriClients              = "%s/workspaces/%s/clients"
 	UriTimeEntries          = "%s/me/time_entries"
 	UriTimeEntriesWorkspace = "%s/workspaces/%s/time_entries"
+	UriTimeEntriesID        = "%s/workspaces/%s/time_entries/%d"
 	UriTimeEntriesStop      = "%s/workspaces/%s/time_entries/%d/stop"
 	UriProject              = "%s/workspaces/%s/projects"
 )
@@ -52,6 +53,15 @@ func getTimeEntriesWorkspaceUri() (string, error) {
 		return "", err
 	}
 	uri := fmt.Sprintf(UriTimeEntriesWorkspace, UriBase, workspaceID)
+	return uri, nil
+}
+
+func getTimeEntriesIDUri(entryID int64) (string, error) {
+	workspaceID, err := getWorkspaceID()
+	if err != nil {
+		return "", err
+	}
+	uri := fmt.Sprintf(UriTimeEntriesID, UriBase, workspaceID, entryID)
 	return uri, nil
 }
 

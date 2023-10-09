@@ -14,6 +14,7 @@ type TimeEntryGateway interface {
 	Add(timeEntry *NewTogglTimeEntry) error
 	GetCurrent() (*TogglTimeEntry, error)
 	Stop(entryID int64) error
+	EditDesc(entryID int64, desc string) error
 }
 
 type ClientGateway interface {

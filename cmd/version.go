@@ -9,8 +9,8 @@ import (
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Version of the gt cli",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("gt version 0.4.0")
+	Run: func(_ *cobra.Command, _ []string) {
+		fmt.Println("gt version 0.6.0")
 	},
 }
 

@@ -257,3 +257,50 @@ func (t *TogglTimeEntriesGateway) Stop(entryID int64) error {
 
 	return nil
 }
+
+func (t *TogglTimeEntriesGateway) EditDesc(entryID int64, desc string) error {
+	uri, err := getTimeEntriesIDUri(entryID)
+	if err != nil {
+		return err
+	}
+
+	u, err := url.Parse(uri)
+	if err != nil {
+		return err
+	}
+
+	q := u.Query()
+	u.RawQuery = q.Encode()
+
+	timeEntry := toggl.UpdateTogglTimeEntryDesc{
+		Description: desc,
+	}
+
+	client := &http.Client{}
+	payload, err := json.Marshal(timeEntry)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, u.String(), bytes.NewBuffer(payload))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.SetBasicAuth(viper.GetString("toggl.ApiKey"), "api_token")
+
+	log.Println("URI:", u.String())
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("invalid status: %s", resp.Status)
+	}
+
+	return nil
+}
