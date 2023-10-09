@@ -5,7 +5,7 @@ go 1.21.0
 require (
 	github.com/google/uuid v1.3.1
 	github.com/google/wire v0.5.0
-	github.com/hashicorp/go-azure-sdk v0.20230922.1111207
+	github.com/hashicorp/go-azure-sdk v0.20231005.1153009
 	github.com/manicminer/hamilton v0.63.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.7.0
