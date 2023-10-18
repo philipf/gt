@@ -13,26 +13,35 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var dryRun bool = false
-
-// purgeCmd represents the purge command
 var purgeCmd = &cobra.Command{
 	Use:   "purge",
 	Short: "Purge archived actions",
 	Long:  `All files in the Kanban directory with the status set to Archive in the Front Matter will be deleted.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		purge()
+	Run: func(cmd *cobra.Command, _ []string) {
+		purge(cmd)
 	},
 }
 
 func init() {
 	gtdCmd.AddCommand(purgeCmd)
 
-	purgeCmd.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "Dry run")
+	purgeCmd.Flags().BoolP("dry-run", "d", false, "Dry run")
+	purgeCmd.Flags().BoolP("clean-all", "a", false, "Clean all notes, not only the Kanban board")
 }
 
-func purge() {
-	searchDir := settings.GetKanbanGtdPath()
+func purge(cmd *cobra.Command) {
+
+	dryRun, err := cmd.Flags().GetBool("dry-run")
+	cobra.CheckErr(err)
+
+	cleanAll, err := cmd.Flags().GetBool("clean-all")
+	cobra.CheckErr(err)
+
+	searchDir := settings.GetKanbanBoardPath()
+
+	if cleanAll {
+		searchDir = settings.GetKanbanGtdPath()
+	}
 
 	if searchDir == "" {
 		fmt.Println("The GTD directory is not set in the config file")
@@ -60,7 +69,7 @@ func purge() {
 	var filesToBeDeleted []string
 
 	// Walk through the directory and its subdirectories
-	err = filepath.Walk(searchDir, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(searchDir, func(path string, _ os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
