@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// gtdCmd represents the action command
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List projects",
