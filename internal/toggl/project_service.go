@@ -3,7 +3,6 @@ package toggl
 import (
 	"errors"
 	"fmt"
-	"log"
 	"regexp"
 	"sort"
 	"strconv"
@@ -37,9 +36,7 @@ func (p *ProjectService) Get(filter *GetProjectsOpts) (TogglProjects, error) {
 }
 
 func (p *ProjectService) Archive(projectID int64) error {
-	log.Printf("Archiving project %d\n", projectID)
-	return nil
-	// return p.ProjectGateway.Archive(projectID)
+	return p.ProjectGateway.Archive(projectID)
 }
 
 func (p *ProjectService) ParseProjectTitle(project string) (ProjectTitle, error) {

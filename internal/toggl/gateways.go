@@ -7,6 +7,7 @@ import (
 type ProjectGateway interface {
 	Get(filter *GetProjectsOpts) (TogglProjects, error)
 	Create(projectName string, clientID int64) error
+	Archive(projectID int64) error
 }
 
 type TimeEntryGateway interface {

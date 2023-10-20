@@ -43,6 +43,13 @@ gt toggl project archive
 		p := tea.NewProgram(m)
 		_, err = p.Run()
 		cobra.CheckErr(err)
+
+		// print all the selected projects
+		for i := range m.selected {
+			err := projectService.Archive(m.projects[i].ID)
+			cobra.CheckErr(err)
+			fmt.Println("Archived project", m.projects[i].Name)
+		}
 	},
 }
 
@@ -76,21 +83,6 @@ type model struct {
 	selected map[int]struct{}
 }
 
-// func initialModel() model {
-// 	return model{
-// 		projects: []string{"foo", "bar", "baz"},
-// 		selected: make(map[int]struct{}),
-// 	}
-// }
-
-func archiveProjects(m model) tea.Cmd {
-	for i := range m.selected {
-		_ = projectService.Archive(m.projects[i].ID)
-	}
-
-	return tea.Quit
-}
-
 func (m model) Init() tea.Cmd {
 	return fetchProjects
 }
@@ -103,15 +95,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 
 		case "w":
-			return m, archiveProjects(m)
+			return m, tea.Quit
 
 		case "up", "k":
 			if m.cursor > 0 {
 				m.cursor--
+			} else {
+				m.cursor = len(m.projects) - 1
 			}
 		case "down", "j":
 			if m.cursor < len(m.projects)-1 {
 				m.cursor++
+			} else {
+				m.cursor = 0
 			}
 		case "enter", " ":
 			if _, ok := m.selected[m.cursor]; ok {
@@ -126,7 +122,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	s := "Select projects to archive:\n\n"
+	s := "Select projects to archive [Q]uit/[W]rite:\n\n"
 
 	for i, p := range m.projects {
 		checked := " "

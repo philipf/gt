@@ -154,3 +154,36 @@ func (*JsonFileCache[T, TFilter]) Save(filter TFilter, filePath string, data *T,
 
 	return nil
 }
+
+// Delete the data from the cache
+func (*JsonFileCache[T, TFilter]) Delete(filePath string) error {
+	// Open the file
+	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		return fmt.Errorf("jsonFileCache.Delete could not open file: %w", err)
+	}
+	defer file.Close()
+
+	// Write the file
+	// seek to the beginning of the file
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		return err
+	}
+
+	empty := "[]"
+	bytes := []byte(empty)
+
+	_, err = file.Write(bytes)
+	if err != nil {
+		return err
+	}
+
+	// Truncate the file to the length of the new bytes
+	err = file.Truncate(int64(len(bytes)))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

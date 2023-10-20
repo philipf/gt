@@ -82,3 +82,12 @@ func getCreateProjectUri() (string, error) {
 	uri := fmt.Sprintf(UriProject, UriBase, workspaceID)
 	return uri, nil
 }
+
+func getArchiveProjectUri(projectID int64) (string, error) {
+	workspaceID, err := getWorkspaceID()
+	if err != nil {
+		return "", err
+	}
+	uri := fmt.Sprintf(UriProject, UriBase, workspaceID) + fmt.Sprintf("/%d", projectID)
+	return uri, nil
+}

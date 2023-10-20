@@ -24,6 +24,10 @@ type CreateProjectRequest struct {
 	ClientID  int64  `json:"cid"`
 }
 
+type ArchiveProjectRequest struct {
+	IsActive bool `json:"active"`
+}
+
 type TogglProjectGateway struct {
 }
 
@@ -177,5 +181,72 @@ func (t *TogglProjectGateway) Create(projectName string, clientID int64) error {
 	}
 
 	fmt.Println("Project created successfully:", string(body))
+	deleteCache()
+	return nil
+}
+
+func (t *TogglProjectGateway) Archive(projectId int64) error {
+	uri, err := getArchiveProjectUri(projectId)
+	if err != nil {
+		return err
+	}
+
+	u, err := url.Parse(uri)
+	if err != nil {
+		return err
+	}
+
+	project := ArchiveProjectRequest{
+		IsActive: false,
+	}
+
+	data, err := json.Marshal(project)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, u.String(), bytes.NewBuffer(data))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.SetBasicAuth(viper.GetString("toggl.ApiKey"), "api_token")
+
+	log.Println("Request:", req)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("%d failed to archive project: %s", resp.StatusCode, body)
+	}
+
+	log.Println("Project archived successfully:", projectId)
+	deleteCache()
+	return nil
+}
+
+func deleteCache() error {
+	cache := cache.JsonFileCache[toggl.TogglProjects, toggl.GetProjectsOpts]{}
+
+	cacheDir, err := settings.GetGtConfigPath()
+	if err != nil {
+		return err
+	}
+
+	cacheFilePath := path.Join(cacheDir, "toggl-projects.json")
+
+	err = cache.Delete(cacheFilePath)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
