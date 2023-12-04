@@ -6,7 +6,7 @@ require (
 	github.com/charmbracelet/bubbletea v0.24.2
 	github.com/google/uuid v1.3.1
 	github.com/google/wire v0.5.0
-	github.com/hashicorp/go-azure-sdk v0.20231020.1151504
+	github.com/hashicorp/go-azure-sdk v0.20231129.1170309
 	github.com/manicminer/hamilton v0.63.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.7.0
@@ -22,7 +22,7 @@ require (
 	github.com/dlclark/regexp2 v1.8.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/hashicorp/go-azure-helpers v0.62.0 // indirect
+	github.com/hashicorp/go-azure-helpers v0.64.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.4 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
