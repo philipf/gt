@@ -4,7 +4,7 @@ go 1.21.0
 
 require (
 	github.com/charmbracelet/bubbletea v0.24.2
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.6.0
 	github.com/google/wire v0.5.0
 	github.com/hashicorp/go-azure-sdk v0.20240112.1133231
 	github.com/manicminer/hamilton v0.63.0
