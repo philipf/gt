@@ -26,3 +26,4 @@ config.yaml
 gt
 viper
 SecondBrain/*
+.gt/in.md
