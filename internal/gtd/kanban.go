@@ -93,7 +93,7 @@ func InsertTodo(path, heading, todo string, withLink bool, due *time.Time) error
 	}
 
 	if due != nil && !due.IsZero() {
-		todo = fmt.Sprintf("%s<br>[due:: %s]", todo, due.Format("2006-01-02"))
+		todo = fmt.Sprintf("%s [due:: %s]", todo, due.Format("2006-01-02"))
 	}
 
 	lines, err := readFile(path)
