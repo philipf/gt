@@ -2,6 +2,7 @@ package gtd
 
 import (
 	"os"
+	"time"
 
 	"github.com/philipf/gt/internal/settings"
 )
@@ -21,8 +22,8 @@ func AddDescriptionNote(action *Action) error {
 	return nil
 }
 
-func AddToKanban(todo string, withLink bool) error {
+func AddToKanban(todo string, withLink bool, due *time.Time) error {
 	path := settings.GetKanbanBoardPath()
-	err := InsertTodo(path, settings.GetKanbanInColumn(), todo, withLink)
+	err := InsertTodo(path, settings.GetKanbanInColumn(), todo, withLink, due)
 	return err
 }

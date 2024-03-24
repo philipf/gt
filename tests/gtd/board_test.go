@@ -17,7 +17,7 @@ func TestInsertItemWithLink(t *testing.T) {
 
 	files.CopyFile("_Board.md", testFile)
 
-	err := gtd.InsertTodo(testFile, "In", "Test 1", true)
+	err := gtd.InsertTodo(testFile, "In", "Test 1", true, nil)
 	if err != nil {
 		t.Error(err)
 	}
@@ -43,7 +43,7 @@ func TestInsertItem(t *testing.T) {
 
 	files.CopyFile("_Board.md", testFile)
 
-	err := gtd.InsertTodo(testFile, "In", "Test 1", false)
+	err := gtd.InsertTodo(testFile, "In", "Test 1", false, nil)
 	if err != nil {
 		t.Error(err)
 	}

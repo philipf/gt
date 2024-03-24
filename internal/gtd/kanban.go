@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/philipf/gt/internal/files"
 )
@@ -86,9 +87,13 @@ func writeFile(path string, lines []string) error {
 
 // InsertTodo inserts a new to-do item under a specified heading in a file.
 // If withLink is true, the to-do item is formatted as a link.
-func InsertTodo(path, heading, todo string, withLink bool) error {
+func InsertTodo(path, heading, todo string, withLink bool, due *time.Time) error {
 	if withLink {
 		todo = fmt.Sprintf("[[%s]]", files.ToValidFilename(todo))
+	}
+
+	if due != nil && !due.IsZero() {
+		todo = fmt.Sprintf("%s [due:: %s]", todo, due.Format("2006-01-02"))
 	}
 
 	lines, err := readFile(path)

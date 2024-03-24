@@ -52,6 +52,9 @@ func init() {
 	// is called directly, e.g.:
 }
 
+// Create a new action, this is an in memory representation of the action and will be persisted later
+// Add a new todo to the kanban board
+// Exist if no description was provided
 func promptForAction() error {
 	title, err := getUserInput("Action title:", false)
 	if err != nil {
@@ -67,13 +70,24 @@ func promptForAction() error {
 		return err
 	}
 
-	// Create a new action, this is an in memory representation of the action and will be persisted later
-	// Add a new todo to the kanban board
-	// Exist if no description was provided
-	return addAction(title, description)
+	dueStr, err := getUserInput("Due date (optional, format: YYYY-MM-DD):", false)
+	if err != nil {
+		return err
+	}
+
+	// Parse the due date if it was provided
+	var due time.Time
+	if dueStr != "" {
+		due, err = time.Parse("2006-01-02", dueStr)
+		if err != nil {
+			return err
+		}
+	}
+
+	return addAction(title, description, &due)
 }
 
-func addAction(title string, description string) error {
+func addAction(title string, description string, due *time.Time) error {
 	action, err := gtd.CreateBasicAction(title, description, "cli")
 	if err != nil {
 		return err
@@ -81,7 +95,7 @@ func addAction(title string, description string) error {
 
 	containsDescription := strings.TrimSpace(action.Description) != ""
 
-	err = gtd.AddToKanban(action.Title, containsDescription)
+	err = gtd.AddToKanban(action.Title, containsDescription, due)
 	if err == nil {
 		fmt.Println("To-do added to kanban board")
 	} else {
@@ -203,7 +217,12 @@ func promptForActionUsingAi() error {
 	shouldUse = strings.TrimSpace(strings.ToLower(shouldUse))
 
 	if shouldUse == "" || shouldUse == "y" {
-		return addAction(aiResponse["action"], aiResponse["summary"]+"\n\n## Original request\n"+input)
+		due, err := time.Parse("2006-01-02", aiResponse["dueDate"])
+		if err != nil {
+			return err
+		}
+
+		return addAction(aiResponse["action"], aiResponse["summary"]+"\n\n## Original request\n"+input, &due)
 	} else {
 		return promptForAction()
 	}
@@ -226,7 +245,7 @@ var functions = []llms.FunctionDefinition{
 				},
 				"dueDate": {
 					Type:        jsonschema.String,
-					Description: "Due date of the action if it can be determined",
+					Description: "Due date of the action if it can be determined, the date format should be YYYY-MM-DD",
 				},
 			},
 			Required: []string{"action", "summary"},
