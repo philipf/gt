@@ -13,9 +13,9 @@ func AddDescriptionNote(action *Action) error {
 		return err
 	}
 
-	inboxPath := settings.GetKanbanInboxPath()
+	kanbanPath := settings.GetKanbanBasePath()
 
-	err := ActionToMd(action, inTemplate, inboxPath)
+	err := ActionToMd(action, inTemplate, kanbanPath)
 	if err != nil {
 		return err
 	}

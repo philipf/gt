@@ -150,22 +150,22 @@ func GetInTemplatePath() string {
 	return filepath.Join(homeDir, gtHomePath, inTemplate)
 }
 
-func getKanbanBasePath() string {
+func GetKanbanBasePath() string {
 	return viper.GetString("kanban.basePath")
 }
 
 func GetKanbanGtdPath() string {
-	basePath := getKanbanBasePath()
-	return filepath.Join(basePath, viper.GetString("kanban.gtdPath"))
+	basePath := GetKanbanBasePath()
+	return basePath
 }
 
 func GetKanbanInboxPath() string {
-	gtdPath := GetKanbanGtdPath()
+	gtdPath := GetKanbanBasePath()
 	return filepath.Join(gtdPath, viper.GetString("kanban.inboxPath"))
 }
 
 func GetKanbanBoardPath() string {
-	gtdPath := GetKanbanGtdPath()
+	gtdPath := GetKanbanBasePath()
 	return filepath.Join(gtdPath, viper.GetString("kanban.boardPath"))
 }
 
