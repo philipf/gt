@@ -19,7 +19,6 @@ import (
 	"github.com/tmc/langchaingo/jsonschema"
 	"github.com/tmc/langchaingo/llms"
 	"github.com/tmc/langchaingo/llms/openai"
-	"github.com/tmc/langchaingo/schema"
 )
 
 // addCmd represents the new command
@@ -140,7 +139,7 @@ func promptForActionUsingAi() error {
 
 	fmt.Printf("Processing using [%s]....\n", viper.GetString("ai.openAiModel"))
 
-	llm, err := openai.NewChat(
+	llm, err := openai.New(
 		openai.WithModel(viper.GetString("ai.openAiModel")),
 		openai.WithToken(viper.GetString("ai.openAiKey")),
 	)
@@ -173,10 +172,14 @@ func promptForActionUsingAi() error {
 
 	startTime := time.Now()
 
+	// Based on the example: https://github.com/tmc/langchaingo/blob/main/examples/ernie-function-call-example/ernie_function_call_example.go
+
 	ctx := context.Background()
-	completion, err := llm.Call(ctx, []schema.ChatMessage{
-		schema.HumanChatMessage{Content: prompt}, // For some reason specifying a system message causes GPT-4 to ignore the FunctionCall??
-	}, llms.WithTemperature(temperature),
+	resp, err := llm.GenerateContent(ctx,
+		[]llms.MessageContent{
+			llms.TextParts(llms.ChatMessageTypeHuman, prompt),
+		},
+		llms.WithTemperature(temperature),
 		llms.WithFunctions(functions),
 	)
 
@@ -186,14 +189,13 @@ func promptForActionUsingAi() error {
 		log.Fatal(err)
 	}
 
-	if completion.FunctionCall == nil {
-		log.Fatal("No function call returned")
-	}
-
-	// Store the the function call arguments in a map by first parsing it to json
+	// In the updated API, the completion is a string that contains the function call response
+	// We need to parse it directly
 	var aiResponse map[string]string
 
-	err = json.Unmarshal([]byte(completion.FunctionCall.Arguments), &aiResponse)
+	choice1 := resp.Choices[0]
+
+	err = json.Unmarshal([]byte(choice1.FuncCall.Arguments), &aiResponse)
 
 	if err != nil {
 		log.Fatal(err)
