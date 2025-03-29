@@ -15,7 +15,7 @@ GT (Go Time) is a CLI tool designed to improve productivity. It provides various
 
 ### Prerequisites
 
-- Go 1.16 or higher
+- Go 1.23 or higher
 - Git
 
 ### Install from Source
@@ -101,7 +101,7 @@ You can edit this file manually to customize your settings.
 
 ### Prerequisites for Development
 
-- Go 1.16 or higher
+- Go 1.23 or higher
 - Git
 - VSCode with Dev Containers extension (optional, for containerized development)
 
