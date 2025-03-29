@@ -37,10 +37,10 @@ func purge(cmd *cobra.Command) {
 	cleanAll, err := cmd.Flags().GetBool("clean-all")
 	cobra.CheckErr(err)
 
-	searchDir := settings.GetKanbanBoardPath()
+	searchDir := settings.GetKanbanGtdPath()
 
 	if cleanAll {
-		searchDir = settings.GetKanbanGtdPath()
+		searchDir = settings.GetKanbanBasePath()
 	}
 
 	if searchDir == "" {
@@ -58,7 +58,7 @@ func purge(cmd *cobra.Command) {
 	filePattern := "*.md"
 
 	// Define the content pattern to search for using regex
-	contentPatternRegex := `^---\n(?:[^\n]*\n)*?status:\s*Archive`
+	contentPatternRegex := `^---\n(?:[^\n]*\n)*?status:\s*(Archive|Done)`
 
 	re, err := regexp.Compile(contentPatternRegex)
 	if err != nil {
@@ -67,6 +67,9 @@ func purge(cmd *cobra.Command) {
 
 	// Declare a slice to store the results
 	var filesToBeDeleted []string
+
+	// Show the the directory to be searched
+	fmt.Printf("Searching in [%s] for files matching [%s] with content matching [%s]\n", searchDir, filePattern, contentPatternRegex)
 
 	// Walk through the directory and its subdirectories
 	err = filepath.Walk(searchDir, func(path string, _ os.FileInfo, err error) error {
@@ -120,7 +123,7 @@ func purge(cmd *cobra.Command) {
 
 	for _, file := range filesToBeDeleted {
 		if dryRun {
-			break
+			continue
 		}
 
 		err := os.Remove(file)
