@@ -219,12 +219,17 @@ func promptForActionUsingAi() error {
 	shouldUse = strings.TrimSpace(strings.ToLower(shouldUse))
 
 	if shouldUse == "" || shouldUse == "y" {
-		due, err := time.Parse("2006-01-02", aiResponse["dueDate"])
-		if err != nil {
-			return err
+		var duePtr *time.Time
+
+		if aiResponse["dueDate"] != "" {
+			due, err := time.Parse("2006-01-02", aiResponse["dueDate"])
+			if err != nil {
+				return err
+			}
+			duePtr = &due
 		}
 
-		return addAction(aiResponse["action"], aiResponse["summary"]+"\n\n## Original request\n"+input, &due)
+		return addAction(aiResponse["action"], aiResponse["summary"]+"\n\n## Original request\n"+input, duePtr)
 	} else {
 		return promptForAction()
 	}
