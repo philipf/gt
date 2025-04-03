@@ -3,9 +3,12 @@ package report
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
+	"github.com/ethanefung/bubble-datepicker"
 	"github.com/philipf/gt/cmd/togglcmd"
 	"github.com/philipf/gt/internal/toggl"
 	"github.com/spf13/cobra"
@@ -111,45 +114,16 @@ func runInteractiveReport(cmd *cobra.Command) {
 	var sd, ed time.Time
 	
 	if selectedDateOption == "custom" {
-		// Format for display
-		today := time.Now().Format("2006/01/02")
-		
-		customDateForm := huh.NewForm(
-			huh.NewGroup(
-				huh.NewInput().
-					Title("Start Date (YYYY/MM/DD)").
-					Placeholder(today).
-					Validate(func(s string) error {
-						if s == "" {
-							return fmt.Errorf("Start date is required")
-						}
-						_, err := time.ParseInLocation("2006/01/02", s, time.Local)
-						if err != nil {
-							return fmt.Errorf("Invalid date format. Please use YYYY/MM/DD")
-						}
-						return nil
-					}).
-					Value(&startDateStr),
-					
-				huh.NewInput().
-					Title("End Date (YYYY/MM/DD)").
-					Placeholder(today).
-					Validate(func(s string) error {
-						if s == "" {
-							return fmt.Errorf("End date is required")
-						}
-						_, err := time.ParseInLocation("2006/01/02", s, time.Local)
-						if err != nil {
-							return fmt.Errorf("Invalid date format. Please use YYYY/MM/DD")
-						}
-						return nil
-					}).
-					Value(&endDateStr),
-			),
-		)
-		
-		err = customDateForm.Run()
+		// Use bubble-datepicker for date selection
+		startDate, err := getDateWithPicker("Select Start Date")
 		cobra.CheckErr(err)
+		
+		endDate, err := getDateWithPicker("Select End Date")
+		cobra.CheckErr(err)
+		
+		// Format dates for command flags
+		startDateStr = startDate.Format("2006/01/02")
+		endDateStr = endDate.Format("2006/01/02")
 		
 		// Set custom dates on the command
 		cmd.Flags().Set("startDate", startDateStr)
@@ -282,4 +256,79 @@ func init() {
 
 func initServices() {
 	reportService = initialiseReportService()
+}
+
+// Bubble Tea model for datepicker
+type datePickerModel struct {
+	title      string
+	datePicker datepicker.Model
+	quitting   bool
+	err        error
+	selectedDate time.Time
+}
+
+func initialModel(title string) datePickerModel {
+	dp := datepicker.New(time.Now())
+	dp.SelectDate() // Activate date selection
+	
+	return datePickerModel{
+		title:      title,
+		datePicker: dp,
+		selectedDate: time.Time{},
+	}
+}
+
+func (m datePickerModel) Init() tea.Cmd {
+	return nil
+}
+
+func (m datePickerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "esc", "ctrl+c":
+			m.quitting = true
+			return m, tea.Quit
+		case "enter":
+			// Store selected date and quit
+			m.selectedDate = m.datePicker.Time
+			return m, tea.Quit
+		}
+	}
+	
+	// Handle datepicker updates
+	dp, cmd := m.datePicker.Update(msg)
+	m.datePicker = dp
+	
+	return m, cmd
+}
+
+func (m datePickerModel) View() string {
+	s := strings.Builder{}
+	s.WriteString(fmt.Sprintf("%s\n\n", m.title))
+	s.WriteString(m.datePicker.View())
+	s.WriteString("\n\nPress Enter to confirm selection, Esc to cancel\n")
+	
+	return s.String()
+}
+
+// getDateWithPicker launches a BubbleTea program with a datepicker
+// and returns the selected date
+func getDateWithPicker(title string) (time.Time, error) {
+	m := initialModel(title)
+	p := tea.NewProgram(m)
+	
+	finalModel, err := p.Run()
+	if err != nil {
+		return time.Time{}, err
+	}
+	
+	// Get the final state
+	finalState := finalModel.(datePickerModel)
+	
+	if finalState.quitting && finalState.selectedDate.IsZero() {
+		return time.Now(), nil // Default to today if user quit
+	}
+	
+	return finalState.selectedDate, nil
 }
