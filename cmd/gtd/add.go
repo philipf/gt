@@ -11,7 +11,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/philipf/gt/internal/console"
+	"github.com/charmbracelet/huh"
 	"github.com/philipf/gt/internal/gtd"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -40,36 +40,52 @@ var addCmd = &cobra.Command{
 
 func init() {
 	gtdCmd.AddCommand(addCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// newCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
 }
 
 // Create a new action, this is an in memory representation of the action and will be persisted later
 // Add a new todo to the kanban board
 // Exist if no description was provided
 func promptForAction() error {
-	title, err := getUserInput("Action title:", false)
-	if err != nil {
-		return err
-	}
+	// Define variables to store form values
+	var title string
+	var description string
+	var dueStr string
 
-	if title == "" {
-		return errors.New("title cannot be empty")
-	}
+	// Create the form with Huh library
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Action title").
+				Value(&title).
+				Validate(func(s string) error {
+					if strings.TrimSpace(s) == "" {
+						return errors.New("title cannot be empty")
+					}
+					return nil
+				}),
 
-	description, err := getUserInput("Description (optional, end capture with a full stop on a new line):", true)
-	if err != nil {
-		return err
-	}
+			huh.NewText().
+				Title("Description (optional)").
+				Value(&description),
 
-	dueStr, err := getUserInput("Due date (optional, format: YYYY-MM-DD):", false)
+			huh.NewInput().
+				Title("Due date (optional, format: YYYY-MM-DD)").
+				Value(&dueStr).
+				Validate(func(s string) error {
+					if strings.TrimSpace(s) == "" {
+						return nil // Empty is valid
+					}
+					_, err := time.Parse("2006-01-02", s)
+					if err != nil {
+						return errors.New("due date must be in YYYY-MM-DD format")
+					}
+					return nil
+				}),
+		),
+	)
+
+	// Run the form
+	err := form.Run()
 	if err != nil {
 		return err
 	}
@@ -79,7 +95,7 @@ func promptForAction() error {
 	if dueStr != "" {
 		due, err = time.Parse("2006-01-02", dueStr)
 		if err != nil {
-			return err
+			return err // Should not happen due to validation
 		}
 	}
 
@@ -115,24 +131,19 @@ func addAction(title string, description string, due *time.Time) error {
 	return nil
 }
 
-func getUserInput(prompt string, allowMultiLine bool) (string, error) {
-	fmt.Println(prompt)
-
-	if !allowMultiLine {
-		return console.ReadLine()
-	} else {
-		lines, err := console.ReadMultiLine()
-		if err != nil {
-			return "", err
-		}
-		result := strings.Join(lines, "\n")
-		return result, nil
-	}
-}
-
 func promptForActionUsingAi() error {
-	input, err := getUserInput("Enter input to create an action from:", true)
+	var input string
 
+	// Create a form for AI input
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewText().
+				Title("Enter input to create an action from:").
+				Value(&input),
+		),
+	)
+
+	err := form.Run()
 	if err != nil {
 		return err
 	}
@@ -153,7 +164,7 @@ func promptForActionUsingAi() error {
 
 	t := template.Must(template.New("gtdTemplate").Parse(templateStr))
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"name":        viper.GetString("personal.name"),
 		"surname":     viper.GetString("personal.surname"),
 		"company":     viper.GetString("personal.company"),
@@ -201,35 +212,79 @@ func promptForActionUsingAi() error {
 		log.Fatal(err)
 	}
 
-	// Print the action and summary to the console
-	fmt.Println("--------------------------------------------")
-	fmt.Println("Action  : ", aiResponse["action"])
-	fmt.Println("Summary : ", aiResponse["summary"])
-	fmt.Println("Due date: ", aiResponse["dueDate"])
-	fmt.Println("--------------------------------------------")
-	fmt.Printf("Operation took %.2f seconds\n", elapsedTime.Seconds())
+	// Display processing time
+	fmt.Printf("Operation completed in %.2f seconds\n", elapsedTime.Seconds())
 
-	// Ask the user if they want to add the action
-	fmt.Println("Do you want to add this action? [y]/n")
-	shouldUse, err := console.ReadLine()
+	// Create editable form with the AI-generated values
+	title := aiResponse["action"]
+	summary := aiResponse["summary"]
+	dueDate := aiResponse["dueDate"]
+	confirmAdd := true
+
+	// Create a confirmation form with the AI response, allowing edits
+	form = huh.NewForm(
+		huh.NewGroup(
+			huh.NewNote().
+				Title("AI Generated Action").
+				Description("Review and edit if needed:"),
+
+			huh.NewInput().
+				Title("Action Title").
+				Value(&title).
+				Validate(func(s string) error {
+					if strings.TrimSpace(s) == "" {
+						return errors.New("title cannot be empty")
+					}
+					return nil
+				}),
+
+			huh.NewText().
+				Title("Description").
+				Value(&summary),
+
+			huh.NewInput().
+				Title("Due Date (YYYY-MM-DD)").
+				Value(&dueDate).
+				Validate(func(s string) error {
+					if strings.TrimSpace(s) == "" {
+						return nil // Empty is valid
+					}
+					_, err := time.Parse("2006-01-02", s)
+					if err != nil {
+						return errors.New("due date must be in YYYY-MM-DD format")
+					}
+					return nil
+				}),
+
+			huh.NewConfirm().
+				Title("Add this action?").
+				Value(&confirmAdd),
+		),
+	)
+
+	err = form.Run()
 	if err != nil {
 		return err
 	}
 
-	shouldUse = strings.TrimSpace(strings.ToLower(shouldUse))
-
-	if shouldUse == "" || shouldUse == "y" {
+	if confirmAdd {
 		var duePtr *time.Time
 
-		if aiResponse["dueDate"] != "" {
-			due, err := time.Parse("2006-01-02", aiResponse["dueDate"])
+		if dueDate != "" {
+			due, err := time.Parse("2006-01-02", dueDate)
 			if err != nil {
-				return err
+				return err // Should not happen due to validation
 			}
 			duePtr = &due
 		}
 
-		return addAction(aiResponse["action"], aiResponse["summary"]+"\n\n## Original request\n"+input, duePtr)
+		// Include the original input in the description
+		fullDescription := summary
+		if !strings.Contains(summary, "Original request") {
+			fullDescription += "\n\n## Original request\n" + input
+		}
+
+		return addAction(title, fullDescription, duePtr)
 	} else {
 		return promptForAction()
 	}
