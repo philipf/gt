@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/ethanefung/bubble-datepicker"
@@ -258,56 +259,129 @@ func initServices() {
 	reportService = initialiseReportService()
 }
 
-// Bubble Tea model for datepicker
+// Focus represents which component is currently focused
+type focus int
+
+const (
+	focusInput focus = iota
+	focusPicker
+)
+
+// Bubble Tea model for date input
 type datePickerModel struct {
-	title      string
-	datePicker datepicker.Model
-	quitting   bool
-	err        error
+	title        string
+	datePicker   datepicker.Model
+	textInput    textinput.Model
+	focused      focus
+	quitting     bool
+	err          error
 	selectedDate time.Time
 }
 
 func initialModel(title string) datePickerModel {
+	// Initialize datepicker with current date
 	dp := datepicker.New(time.Now())
 	dp.SelectDate() // Activate date selection
 	
+	// Initialize text input
+	ti := textinput.New()
+	ti.Placeholder = "YYYY/MM/DD"
+	ti.CharLimit = 10
+	ti.Width = 15
+	ti.Focus() // Start with focus on text input
+	ti.SetValue(time.Now().Format("2006/01/02"))
+	
 	return datePickerModel{
-		title:      title,
-		datePicker: dp,
+		title:        title,
+		datePicker:   dp,
+		textInput:    ti,
+		focused:      focusInput,
 		selectedDate: time.Time{},
 	}
 }
 
 func (m datePickerModel) Init() tea.Cmd {
-	return nil
+	return textinput.Blink
 }
 
 func (m datePickerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+	
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "esc", "ctrl+c":
+		case "ctrl+c", "esc":
 			m.quitting = true
 			return m, tea.Quit
+			
+		case "tab", "shift+tab":
+			// Switch focus between input and datepicker
+			if m.focused == focusInput {
+				m.focused = focusPicker
+				m.textInput.Blur()
+			} else {
+				m.focused = focusInput
+				m.textInput.Focus()
+			}
+			return m, nil
+			
 		case "enter":
-			// Store selected date and quit
-			m.selectedDate = m.datePicker.Time
-			return m, tea.Quit
+			// When enter is pressed, confirm the date selection
+			if m.focused == focusInput {
+				// Try to parse the date from text input
+				date, err := time.ParseInLocation("2006/01/02", m.textInput.Value(), time.Local)
+				if err == nil {
+					m.selectedDate = date
+					return m, tea.Quit
+				}
+			} else {
+				// Confirm date selection from the picker
+				m.selectedDate = m.datePicker.Time
+				return m, tea.Quit
+			}
 		}
 	}
 	
-	// Handle datepicker updates
-	dp, cmd := m.datePicker.Update(msg)
-	m.datePicker = dp
+	// Handle input based on focused component
+	if m.focused == focusInput {
+		// Update text input
+		newInput, inputCmd := m.textInput.Update(msg)
+		m.textInput = newInput
+		cmds = append(cmds, inputCmd)
+		
+		// Try to sync the datepicker with valid text input
+		if date, err := time.ParseInLocation("2006/01/02", m.textInput.Value(), time.Local); err == nil {
+			m.datePicker.SetTime(date)
+		}
+	} else {
+		// Update datepicker
+		newPicker, pickerCmd := m.datePicker.Update(msg)
+		m.datePicker = newPicker
+		cmds = append(cmds, pickerCmd)
+		
+		// Sync text input with datepicker
+		m.textInput.SetValue(m.datePicker.Time.Format("2006/01/02"))
+	}
 	
-	return m, cmd
+	return m, tea.Batch(cmds...)
 }
 
 func (m datePickerModel) View() string {
 	s := strings.Builder{}
 	s.WriteString(fmt.Sprintf("%s\n\n", m.title))
+	
+	// Show text input with appropriate styling
+	s.WriteString("Date: ")
+	s.WriteString(m.textInput.View())
+	s.WriteString("\n\n")
+	
+	// Show the datepicker
 	s.WriteString(m.datePicker.View())
-	s.WriteString("\n\nPress Enter to confirm selection, Esc to cancel\n")
+	
+	// Show instructions
+	s.WriteString("\n\nTab: Switch between input and calendar")
+	s.WriteString("\nEnter: Confirm selection")
+	s.WriteString("\nEsc: Cancel\n")
 	
 	return s.String()
 }
