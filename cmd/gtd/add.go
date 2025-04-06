@@ -11,6 +11,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/huh"
 	"github.com/philipf/gt/internal/gtd"
 	"github.com/spf13/cobra"
@@ -134,6 +135,19 @@ func addAction(title string, description string, due *time.Time) error {
 func promptForActionUsingAi() error {
 	var input string
 
+	// Create a custom keymap for the text field
+	keyMap := huh.NewDefaultKeyMap()
+	// Change NewLine to use Enter key
+	keyMap.Text.NewLine = key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "new line"),
+	)
+	// Change Submit to use Control+Enter
+	keyMap.Text.Submit = key.NewBinding(
+		key.WithKeys("ctrl+s"),
+		key.WithHelp("ctrl+s", "submit"),
+	)
+
 	// Create a form for AI input
 	form := huh.NewForm(
 		huh.NewGroup(
@@ -141,7 +155,7 @@ func promptForActionUsingAi() error {
 				Title("Enter input to create an action from:").
 				Value(&input),
 		),
-	)
+	).WithKeyMap(keyMap)
 
 	err := form.Run()
 	if err != nil {
@@ -240,7 +254,8 @@ func promptForActionUsingAi() error {
 
 			huh.NewText().
 				Title("Description").
-				Value(&summary),
+				Value(&summary).
+				WithKeyMap(keyMap),
 
 			huh.NewInput().
 				Title("Due Date (YYYY-MM-DD)").
