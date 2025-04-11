@@ -67,6 +67,7 @@ func promptForAction() error {
 
 			huh.NewText().
 				Title("Description (optional)").
+				CharLimit(0).
 				Value(&description),
 
 			huh.NewInput().
@@ -135,19 +136,6 @@ func addAction(title string, description string, due *time.Time) error {
 func promptForActionUsingAi() error {
 	var input string
 
-	// Create a custom keymap for the text field
-	keyMap := huh.NewDefaultKeyMap()
-	// Change NewLine to use Enter key
-	keyMap.Text.NewLine = key.NewBinding(
-		key.WithKeys("enter"),
-		key.WithHelp("enter", "new line"),
-	)
-	// Change Submit to use Control+Enter
-	keyMap.Text.Submit = key.NewBinding(
-		key.WithKeys("ctrl+s"),
-		key.WithHelp("ctrl+s", "submit"),
-	)
-
 	// Create a form for AI input
 	form := huh.NewForm(
 		huh.NewGroup(
@@ -155,7 +143,7 @@ func promptForActionUsingAi() error {
 				Title("Enter input to create an action from:").
 				Value(&input),
 		),
-	).WithKeyMap(keyMap)
+	).WithKeyMap(createDefaultKeyMap())
 
 	err := form.Run()
 	if err != nil {
@@ -255,7 +243,7 @@ func promptForActionUsingAi() error {
 			huh.NewText().
 				Title("Description").
 				Value(&summary).
-				WithKeyMap(keyMap),
+				CharLimit(0),
 
 			huh.NewInput().
 				Title("Due Date (YYYY-MM-DD)").
@@ -303,6 +291,21 @@ func promptForActionUsingAi() error {
 	} else {
 		return promptForAction()
 	}
+}
+
+func createDefaultKeyMap() *huh.KeyMap {
+	keyMap := huh.NewDefaultKeyMap()
+	// Change NewLine to use Enter key
+	keyMap.Text.NewLine = key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "new line"),
+	)
+	// Change Submit to use Control+Enter
+	keyMap.Text.Submit = key.NewBinding(
+		key.WithKeys("ctrl+s"),
+		key.WithHelp("ctrl+s", "submit"),
+	)
+	return keyMap
 }
 
 var functions = []llms.FunctionDefinition{
