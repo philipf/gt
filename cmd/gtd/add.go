@@ -52,6 +52,11 @@ func promptForAction() error {
 	var description string
 	var dueStr string
 
+	// Default dueStr to today's date if empty
+	if strings.TrimSpace(dueStr) == "" {
+		dueStr = time.Now().Format("2006-01-02")
+	}
+
 	// Create the form with Huh library
 	form := huh.NewForm(
 		huh.NewGroup(
@@ -221,6 +226,10 @@ func promptForActionUsingAi() error {
 	title := aiResponse["action"]
 	summary := aiResponse["summary"]
 	dueDate := aiResponse["dueDate"]
+	// Default dueDate to today's date if empty
+	if strings.TrimSpace(dueDate) == "" {
+		dueDate = time.Now().Format("2006-01-02")
+	}
 	confirmAdd := true
 
 	// Create a confirmation form with the AI response, allowing edits
