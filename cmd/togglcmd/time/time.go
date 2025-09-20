@@ -46,7 +46,7 @@ var timeCmd = &cobra.Command{
 
 func generateTable(entries toggl.TogglTimeEntries) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Start", "Stop", "Duration", "Project", "Description"})
+	table.Header([]string{"ID", "Start", "Stop", "Duration", "Project", "Description"})
 
 	for _, entry := range entries {
 		row := []string{
@@ -60,7 +60,7 @@ func generateTable(entries toggl.TogglTimeEntries) {
 		table.Append(row)
 	}
 
-	table.SetAutoWrapText(false)
+	//table.AutoWrapText(false)
 	table.Render()
 }
 
