@@ -10,7 +10,7 @@ require (
 	github.com/charmbracelet/huh v0.7.0
 	github.com/ethanefung/bubble-datepicker v0.1.0
 	github.com/google/uuid v1.6.0
-	github.com/google/wire v0.6.0
+	github.com/google/wire v0.7.0
 	github.com/hashicorp/go-azure-sdk v0.20240125.1100331
 	github.com/manicminer/hamilton v0.72.0
 	github.com/olekukonko/tablewriter v1.0.9
