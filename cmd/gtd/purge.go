@@ -1,3 +1,8 @@
+// Package gtd implements GTD (Getting Things Done) commands for the gt CLI tool.
+// This file contains the purge command which searches for markdown files in the
+// Kanban directory structure that have "Archive" or "Done" status in their
+// front matter and permanently deletes them. This helps maintain a clean GTD
+// workspace by removing completed or archived tasks and notes.
 package gtd
 
 import (
