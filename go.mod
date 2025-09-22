@@ -13,7 +13,7 @@ require (
 	github.com/google/wire v0.7.0
 	github.com/hashicorp/go-azure-sdk v0.20240125.1100331
 	github.com/manicminer/hamilton v0.72.0
-	github.com/olekukonko/tablewriter v1.0.9
+	github.com/olekukonko/tablewriter v1.1.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.10.0
