@@ -32,7 +32,24 @@ var reportCmd = &cobra.Command{
 			runInteractiveReport(cmd)
 			return
 		}
-		
+
+		isNonInteractive := cmd.Flags().Changed("text") ||
+			cmd.Flags().Changed("json") ||
+			cmd.Flags().Changed("ot") ||
+			cmd.Flags().Changed("oj") ||
+			cmd.Flags().Changed("today") ||
+			cmd.Flags().Changed("yesterday") ||
+			cmd.Flags().Changed("eyesterday") ||
+			cmd.Flags().Changed("thisweek") ||
+			cmd.Flags().Changed("lastweek") ||
+			cmd.Flags().Changed("startDate") ||
+			cmd.Flags().Changed("endDate")
+
+		if !isNonInteractive {
+			runInteractiveReport(cmd)
+			return
+		}
+
 		// Default non-interactive mode
 		runReport(cmd)
 	},
@@ -81,13 +98,13 @@ func runReport(cmd *cobra.Command) {
 // runInteractiveReport executes the report in interactive mode
 func runInteractiveReport(cmd *cobra.Command) {
 	fmt.Println("Interactive Report Mode")
-	
+
 	// Variables to store form values
 	var selectedDateOption string
 	var startDateStr, endDateStr string
 	var outputText, outputJson bool
 	var outputTextFile, outputJsonFile string
-	
+
 	// Date range options
 	dateOptions := []huh.Option[string]{
 		huh.NewOption("Today", "today"),
@@ -97,7 +114,7 @@ func runInteractiveReport(cmd *cobra.Command) {
 		huh.NewOption("Last week", "lastweek"),
 		huh.NewOption("Custom dates", "custom"),
 	}
-	
+
 	// Step 1: Choose date range
 	dateForm := huh.NewForm(
 		huh.NewGroup(
@@ -107,25 +124,25 @@ func runInteractiveReport(cmd *cobra.Command) {
 				Value(&selectedDateOption),
 		),
 	)
-	
+
 	err := dateForm.Run()
 	cobra.CheckErr(err)
-	
+
 	// Step 2: If custom date range is selected, get start and end dates
 	var sd, ed time.Time
-	
+
 	if selectedDateOption == "custom" {
 		// Use bubble-datepicker for date selection
 		startDate, err := getDateWithPicker("Select Start Date")
 		cobra.CheckErr(err)
-		
+
 		endDate, err := getDateWithPicker("Select End Date")
 		cobra.CheckErr(err)
-		
+
 		// Format dates for command flags
 		startDateStr = startDate.Format("2006/01/02")
 		endDateStr = endDate.Format("2006/01/02")
-		
+
 		// Set custom dates on the command
 		cmd.Flags().Set("startDate", startDateStr)
 		cmd.Flags().Set("endDate", endDateStr)
@@ -133,36 +150,36 @@ func runInteractiveReport(cmd *cobra.Command) {
 		// Set the selected date option
 		cmd.Flags().Set(selectedDateOption, "true")
 	}
-	
+
 	// Get the date range based on the selected option
 	sd, ed = togglcmd.GetDateRange(cmd)
-	
+
 	// Step 3: Choose output options
 	var saveTextFile, saveJsonFile bool
-	
+
 	outputForm := huh.NewForm(
 		huh.NewGroup(
 			huh.NewConfirm().
 				Title("Show text report?").
 				Value(&outputText),
-				
+
 			huh.NewConfirm().
 				Title("Show JSON report?").
 				Value(&outputJson),
-				
+
 			huh.NewConfirm().
 				Title("Save text report to file?").
 				Value(&saveTextFile),
-				
+
 			huh.NewConfirm().
 				Title("Save JSON report to file?").
 				Value(&saveJsonFile),
 		),
 	)
-	
+
 	err = outputForm.Run()
 	cobra.CheckErr(err)
-	
+
 	// Step 4: Get file paths if needed
 	if saveTextFile {
 		filePathForm := huh.NewForm(
@@ -174,9 +191,11 @@ func runInteractiveReport(cmd *cobra.Command) {
 			),
 		)
 		err = filePathForm.Run()
+
+		fmt.Printf("!!!!! filePath for outputTextFile %s", outputTextFile)
 		cobra.CheckErr(err)
 	}
-	
+
 	if saveJsonFile {
 		filePathForm := huh.NewForm(
 			huh.NewGroup(
@@ -189,40 +208,40 @@ func runInteractiveReport(cmd *cobra.Command) {
 		err = filePathForm.Run()
 		cobra.CheckErr(err)
 	}
-	
+
 	// Step 5: Generate and display the report
 	rpt, err := reportService.BuildReport(sd, ed)
 	cobra.CheckErr(err)
-	
+
 	// Display date range info
-	fmt.Printf("\nReport for period: %s to %s\n\n", 
-		sd.Format("2006-01-02"), 
+	fmt.Printf("\nReport for period: %s to %s\n\n",
+		sd.Format("2006-01-02"),
 		ed.Format("2006-01-02"))
-	
+
 	// Process text output
 	if outputText || outputTextFile != "" {
 		r, err := reportService.BuildStringReport(rpt)
 		cobra.CheckErr(err)
-		
+
 		if outputText {
 			fmt.Println(*r)
 		}
-		
+
 		if outputTextFile != "" {
 			os.WriteFile(outputTextFile, []byte(*r), 0644)
 			fmt.Printf("Text report saved to: %s\n", outputTextFile)
 		}
 	}
-	
+
 	// Process JSON output
 	if outputJson || outputJsonFile != "" {
 		jsonBytes, err := reportService.BuildJsonReport(rpt)
 		cobra.CheckErr(err)
-		
+
 		if outputJson {
 			fmt.Println(string(*jsonBytes))
 		}
-		
+
 		if outputJsonFile != "" {
 			os.WriteFile(outputJsonFile, *jsonBytes, 0644)
 			fmt.Printf("JSON report saved to: %s\n", outputJsonFile)
@@ -251,7 +270,7 @@ func init() {
 
 	reportCmd.Flags().StringP("startDate", "s", "", "Start date")
 	reportCmd.Flags().StringP("endDate", "e", "", "End date")
-	
+
 	reportCmd.Flags().BoolVarP(&interactive, "interactive", "i", false, "Run report in interactive mode")
 }
 
@@ -282,7 +301,7 @@ func initialModel(title string) datePickerModel {
 	// Initialize datepicker with current date
 	dp := datepicker.New(time.Now())
 	dp.SelectDate() // Activate date selection
-	
+
 	// Initialize text input
 	ti := textinput.New()
 	ti.Placeholder = "YYYY/MM/DD"
@@ -290,7 +309,7 @@ func initialModel(title string) datePickerModel {
 	ti.Width = 15
 	ti.Focus() // Start with focus on text input
 	ti.SetValue(time.Now().Format("2006/01/02"))
-	
+
 	return datePickerModel{
 		title:        title,
 		datePicker:   dp,
@@ -306,14 +325,14 @@ func (m datePickerModel) Init() tea.Cmd {
 
 func (m datePickerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
-	
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "esc":
 			m.quitting = true
 			return m, tea.Quit
-			
+
 		case "tab", "shift+tab":
 			// Switch focus between input and datepicker
 			if m.focused == focusInput {
@@ -324,7 +343,7 @@ func (m datePickerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.textInput.Focus()
 			}
 			return m, nil
-			
+
 		case "enter":
 			// When enter is pressed, confirm the date selection
 			if m.focused == focusInput {
@@ -341,14 +360,14 @@ func (m datePickerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	}
-	
+
 	// Handle input based on focused component
 	if m.focused == focusInput {
 		// Update text input
 		newInput, inputCmd := m.textInput.Update(msg)
 		m.textInput = newInput
 		cmds = append(cmds, inputCmd)
-		
+
 		// Try to sync the datepicker with valid text input
 		if date, err := time.ParseInLocation("2006/01/02", m.textInput.Value(), time.Local); err == nil {
 			m.datePicker.SetTime(date)
@@ -358,31 +377,31 @@ func (m datePickerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		newPicker, pickerCmd := m.datePicker.Update(msg)
 		m.datePicker = newPicker
 		cmds = append(cmds, pickerCmd)
-		
+
 		// Sync text input with datepicker
 		m.textInput.SetValue(m.datePicker.Time.Format("2006/01/02"))
 	}
-	
+
 	return m, tea.Batch(cmds...)
 }
 
 func (m datePickerModel) View() string {
 	s := strings.Builder{}
 	s.WriteString(fmt.Sprintf("%s\n\n", m.title))
-	
+
 	// Show text input with appropriate styling
 	s.WriteString("Date: ")
 	s.WriteString(m.textInput.View())
 	s.WriteString("\n\n")
-	
+
 	// Show the datepicker
 	s.WriteString(m.datePicker.View())
-	
+
 	// Show instructions
 	s.WriteString("\n\nTab: Switch between input and calendar")
 	s.WriteString("\nEnter: Confirm selection")
 	s.WriteString("\nEsc: Cancel\n")
-	
+
 	return s.String()
 }
 
@@ -391,18 +410,18 @@ func (m datePickerModel) View() string {
 func getDateWithPicker(title string) (time.Time, error) {
 	m := initialModel(title)
 	p := tea.NewProgram(m)
-	
+
 	finalModel, err := p.Run()
 	if err != nil {
 		return time.Time{}, err
 	}
-	
+
 	// Get the final state
 	finalState := finalModel.(datePickerModel)
-	
+
 	if finalState.quitting && finalState.selectedDate.IsZero() {
 		return time.Now(), nil // Default to today if user quit
 	}
-	
+
 	return finalState.selectedDate, nil
 }
