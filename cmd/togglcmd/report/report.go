@@ -20,6 +20,11 @@ var textOutput string
 var jsonOutput string
 var interactive bool
 
+const (
+	defaultTextFile = "/tmp/time.txt"
+	defaultJsonFile = "/tmp/time.json"
+)
+
 // reportCmd represents the action command
 var reportCmd = &cobra.Command{
 	Use:   "report",
@@ -182,32 +187,46 @@ func runInteractiveReport(cmd *cobra.Command) {
 
 	// Step 4: Get file paths if needed
 	if saveTextFile {
+		outputTextFile = defaultTextFile
 		filePathForm := huh.NewForm(
 			huh.NewGroup(
 				huh.NewInput().
 					Title("Text file path").
-					Placeholder("/tmp/time.txt").
+					Placeholder(defaultTextFile).
 					Value(&outputTextFile),
 			),
 		)
 		err = filePathForm.Run()
 
-		fmt.Printf("!!!!! filePath for outputTextFile %s", outputTextFile)
 		cobra.CheckErr(err)
 	}
 
 	if saveJsonFile {
+		outputJsonFile = defaultJsonFile
 		filePathForm := huh.NewForm(
 			huh.NewGroup(
 				huh.NewInput().
 					Title("JSON file path").
-					Placeholder("/tmp/time.json").
+					Placeholder(defaultJsonFile).
 					Value(&outputJsonFile),
 			),
 		)
 		err = filePathForm.Run()
 		cobra.CheckErr(err)
 	}
+
+	// Debug session here:
+	fmt.Println("\n--- Debugging Collected Variables ---")
+	fmt.Printf("Selected Date Option: %q\n", selectedDateOption)
+	fmt.Printf("Start Date: %q\n", startDateStr)
+	fmt.Printf("End Date: %q\n", endDateStr)
+	fmt.Printf("Show text report: %t\n", outputText)
+	fmt.Printf("Show JSON report: %t\n", outputJson)
+	fmt.Printf("Save text report to file: %t\n", saveTextFile)
+	fmt.Printf("Text file path: %q\n", outputTextFile)
+	fmt.Printf("Save JSON report to file: %t\n", saveJsonFile)
+	fmt.Printf("JSON file path: %q\n", outputJsonFile)
+	fmt.Println("------------------------------------")
 
 	// Step 5: Generate and display the report
 	rpt, err := reportService.BuildReport(sd, ed)
