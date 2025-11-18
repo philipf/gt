@@ -13,6 +13,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/huh"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/philipf/gt/internal/gtd"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -47,6 +48,9 @@ func init() {
 // Add a new todo to the kanban board
 // Exist if no description was provided
 func promptForAction() error {
+	// Gives windows managers a time to settle the screen rezise before huh 
+	// tries to calulcate the screen size, but end using a previous size config
+	time.Sleep(100 * time.Millisecond)
 	// Define variables to store form values
 	var title string
 	var description string
@@ -61,7 +65,7 @@ func promptForAction() error {
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().
-				Title("Action title").
+				Title("Task title").
 				Value(&title).
 				Validate(func(s string) error {
 					if strings.TrimSpace(s) == "" {
@@ -73,6 +77,7 @@ func promptForAction() error {
 			huh.NewText().
 				Title("Description (optional)").
 				CharLimit(0).
+				Lines(7).
 				Value(&description),
 
 			huh.NewInput().
@@ -88,8 +93,7 @@ func promptForAction() error {
 					}
 					return nil
 				}),
-		),
-	)
+		)).WithProgramOptions(tea.WithAltScreen())
 
 	// Run the form
 	err := form.Run()
@@ -139,6 +143,9 @@ func addAction(title string, description string, due *time.Time) error {
 }
 
 func promptForActionUsingAi() error {
+	// Gives windows managers a time to settle the screen rezise before huh 
+	// tries to calulcate the screen size, but end using a previous size config
+	time.Sleep(100 * time.Millisecond)
 	var input string
 
 	// Create a form for AI input
@@ -148,7 +155,7 @@ func promptForActionUsingAi() error {
 				Title("Enter input to create an action from:").
 				Value(&input),
 		),
-	).WithKeyMap(createDefaultKeyMap())
+	).WithKeyMap(createDefaultKeyMap()).WithProgramOptions(tea.WithAltScreen())
 
 	err := form.Run()
 	if err != nil {
@@ -252,7 +259,8 @@ func promptForActionUsingAi() error {
 			huh.NewText().
 				Title("Description").
 				Value(&summary).
-				CharLimit(0),
+				CharLimit(0).
+				Lines(7),
 
 			huh.NewInput().
 				Title("Due Date (YYYY-MM-DD)").
